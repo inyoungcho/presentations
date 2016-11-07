@@ -1,36 +1,54 @@
-# Module 2: Docker Security Workshop
+# Module: Docker Security Workshop
 <div style="background-image: url(images/image1.jpg)">
 
 </div>
 
 Note:
-This will only display in the notes window.
+This workshop is part of docker training add on module, security deep dive. This is one day workshop with lecture and labs.
+
+---
+
+# Motivation and Overview
+
+---
+
+## Is Docker Container Secure?
+- Is it safe to run applications in docker containers?
+- Can one docker container break out and into another?
+- What is inside my container?
+- How do I know where this code came from?
+- How do I keep our team safe from bad components?
+- How do I stay on top of patches for compliance and governance?
+
+Note:
+Docker first started out as creating a runtime mechanism where containers could – application code can be contained in a container image and then run on a host. And that provided a useful ability to move things around, but – move things around and run them and get the code up and running and going. But the really interesting dynamics came when Docker became, in a sense, a package manager. And what I mean by a package manager was, there was ability to share containers, ability to build on top of containers, on top of other images, and to build workflows around sharing those containers.  When you apply the security lens to these containers and workflows, the following questions arise that must be addressed "Is Docker container secure to use?"
+
 
 ---
 
 ## Goals of this workshop
 
-<section>
+- Learn how to take advantage of Docker security features
+- Learn Docker built-in default security
+- Learn Docker Security Best Practices
 
-
-    <aside class="notes">
-        Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
-    </aside>
-</section>
+Note:
+- See how docker implements default security features, what features are available in Docker
+- What add-on security features are in docker platform  
+- How do you use them?
 
 ---
 
-## Features
-- See what features are available in Docker
-- What do they do?
-- How do you use them?
+## Security Features
+
+-
 
 Note:
-This will only display in the notes window.
 
 ----
 
 ## Understanding
+
 - Look at some tools
 - See underlying implementation details
 - Learn best practices
@@ -39,31 +57,102 @@ This will only display in the notes window.
 ---
 
 ## Do!
+
+Docker Approved features!!!
+
 ![](images/image19.png)
 
+Note:
 ---
 
 ## Do not!
+Docker Experimental features, do not!!! do with caution!!!
 ![](images/image20.png)
 
+Note: Don't mount all voulumes
 ---
+## Even if you do not use any of the techniques we cover
 
-# Docker is additive to the security of your application ...
 
----
-#Even if you do not use any of the techniques we cover
+##  Docker aims to be Secure by Default
 
----
-# Docker aims to be Secure by Default
+Feature lists are growing...
+
 https://docs.docker.com/engine/security/non-events/
 
 CVE-2013-1956, 1957, 1958, 1959, 1979, CVE-2014-4014, 5206, 5207, 7970, 7975, CVE-2015-2925, 8543, CVE-2016-3134, 3135, CVE-2014-0181, CVE-2015-3339, CVE-2014-4699, CVE-2014-9529, CVE-2015-3214, 4036, CVE-2016-0728, CVE-2016-2383
 
----
-# Why?
+NOte: bugs with security issue, note for upgrade or patch or downgrade
+CVE stands for:
+non-events:
+
+ Pointers for things that we are covering, seccomp, isolated name spaces, we protect you from nastiy security bugs
 
 ---
-# How do we think about containers?
+## Container Security Big Picture
+![](images/docker_secure.png)
+
+Note:
+
+---
+## Secure Platform
+![](images/secure_platform.png)
+
+---
+
+## Docker is additive to the security of your application ...
+
+- the intrinsic security of the **kernel** and its support for **namespaces** and **cgroups**
+- the attack surface of the Docker **daemon** itself
+- loopholes in **the container configuration profile**, either by default, or when customized by users
+- the _hardening_ **security features of the kernel** and how they interact with containers
+
+Note: Control Groups, `cgroups` are a feature of the Linux kernel that allow you to limit the access processes and containers have to system resources such as CPU, RAM, IOPS and network.
+
+`Namespaces` provide the first and most straightforward form of isolation: processes running within a container cannot see, and even less affect, processes running in another container, or in the host system.
+
+Each container also gets its own network stack, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
+
+---
+
+## Secure Content
+#### Deep visibility with binary level scanning
+- Detailed BOM of included components and vulnerability profile
+- Checks packages against CVE database AND the code inside to protect against tampering
+#### Proactive risk management
+- Continuous monitoring of CVE/NVD databases with notifications pointing to repos and tags that contain new vulnerabilities
+#### Secure the software supply chain
+- Integrated workflow with  **Docker Content Trust**
+
+---
+
+## Secure Content
+### Image scanning and vulnerability detection
+
+![](images/secure_content.png)
+
+Note:
+Architectural diagram.
+
+Security scanning is a service made up of a scan trigger which implements the APIs, the scanner, database, plugins.  The CVE scanning is a third party that plugs into our service that checks against the public CVE database.  So what happens?
+
+A user/publisher pushes their image to their repo in Docker Cloud
+The scan trigger kicks off the workflow by pulling the image from the repo, sending to the scanner service
+The scanner service breaks up the image into layers and components then sends that to our validation service which checks each package against the CVE database and scans the binaries to make sure the contents of the packages are what they say they are.
+Once complete, the data is sent back to security scanning and stored in our database as a JSON.  Those results per image are then sent back to Docker Cloud to be displayed in UI to the user.
+If a new vulnerability is reported to the CVE database, a notification is sent to the security scanning service.  From there we check against our database and issue a notification to the account admin about the vulnerability and which repos and tags are affected.
+
+Plugin framework - today we have one validation service connected but security scanning was designed in a way to easily add different validation services as needed
+
+---
+
+## Image scanning and vulnerability detection
+
+![](images/security_scanning.png)
+
+---
+## Secure Access
+![](images/secure_access.png)
 
 ---
 ## How we talk about Docker
@@ -71,14 +160,15 @@ CVE-2013-1956, 1957, 1958, 1959, 1979, CVE-2014-4014, 5206, 5207, 7970, 7975, CV
 ![](images/image21.png)
 
 ---
-##How Docker Actually Works
+## How Docker Actually Works
 
 ![](images/howDockerWorks.png)
 
 ---
 ## Where can we see this?
+```
 top
-
+```
 ---
 # Anatomy of a Container
 
@@ -87,10 +177,14 @@ top
 ```
 ls -la /proc/<pid>/ns/
 ```
+Note: tree of all the namespaced
+
+islated view of the host, network namespaces, user name psaces,
+namespace is segment that container sess.
 
 ---
 ## What is namespaced?
-|ID|Name|Usage|
+|Namespace|Actual flag|Usage|
 |------|:---:|-----:|
 |Cgroup|CLONE_NEWCGROUP|Cgroup root directory|
 |IPC|SCLONE_NEWIPC|System V IPC, POSIX message queues|
@@ -120,15 +214,24 @@ Aka *Control Groups* - limit container resources!
 ## cgroups: *what containers can use*
 ![](images/cgroup1.png)
 
+Note: Example of 4 containers on 4 cPus
 ---
 ## cgroups: *what containers can use*
 ![](images/cgroup2.png)
+
+Note: Example using limit CPU usage, ctroup can assign CPUs to containers one.
+
+Other example for memory, and PId
 
 ---
 ## cgroups: *what containers can use*
 ![](images/cgroup3.png)
 
----
+note:
+fork bump, recursively forking and ran out of resources,
+docker pids limits the number that container can create.
+
+----
 ### Hands-On Exercise
 Set up your AWS instance - check your email!
 
