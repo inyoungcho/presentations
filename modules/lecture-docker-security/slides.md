@@ -1,14 +1,74 @@
-# Module: Docker Security Workshop
-<div style="background-image: url(images/image1.jpg)">
+# Docker Security Workshop
 
-</div>
 
 Note:
 This workshop is part of docker training add on module, security deep dive. This is one day workshop with lecture and labs.
 
 ---
 
-# Motivation and Overview
+# Introduction
+
+---
+
+## Agenda
+
+- Introduction
+- Overview of Docker Security
+- Isolation: Kernel namespaces and Control Groups
+
+Secure Docker Platform
+    - Isolation of Application containers
+    - Kernel hardening
+-  Secure Docker Contents
+    - Trusted contents
+    - Image security and layers
+- Secure Dcoker Access
+    - User Management
+
+---
+
+## Course Objectives
+
+During this course, you will Learn
+
+- Why Docker Platform is Secure
+- The core technologies of Docker built-in default security
+- How to deploy with add-on docker security features and tools
+- What issues to consider when implementing Docker Security
+- How to make docker contents secure
+- How to make secure user management and access
+- Learn Docker Security Best Practices
+
+Note:
+We will cover the followings;
+- See how docker implements default security features
+- what features and tools are available in Docker platform
+- How do you use them?
+
+
+---
+
+## Logistics
+
+- Course start and end times
+- Breaks
+- Lecture
+- Lab Environments
+
+---
+
+## Introductions
+
+- About your instructor
+- About your
+    - company and role?
+    - Experience with Docker Security?
+    - Expectations from this course?
+
+---
+
+
+# Overview of Docker Security
 
 ---
 
@@ -20,61 +80,16 @@ This workshop is part of docker training add on module, security deep dive. This
 - How do I keep our team safe from bad components?
 - How do I stay on top of patches for compliance and governance?
 
-Note:
+Note: To answer these questions, we need to understand how docker is implemented.
 Docker first started out as creating a runtime mechanism where containers could – application code can be contained in a container image and then run on a host. And that provided a useful ability to move things around, but – move things around and run them and get the code up and running and going. But the really interesting dynamics came when Docker became, in a sense, a package manager. And what I mean by a package manager was, there was ability to share containers, ability to build on top of containers, on top of other images, and to build workflows around sharing those containers.  When you apply the security lens to these containers and workflows, the following questions arise that must be addressed "Is Docker container secure to use?"
 
 
----
-
-## Goals of this workshop
-
-- Learn how to take advantage of Docker security features
-- Learn Docker built-in default security
-- Learn Docker Security Best Practices
-
-Note:
-- See how docker implements default security features, what features are available in Docker
-- What add-on security features are in docker platform  
-- How do you use them?
 
 ---
-
-## Security Features
-
--
-
-Note:
-
-----
-
-## Understanding
-
-- Look at some tools
-- See underlying implementation details
-- Learn best practices
-
-
----
-
-## Do!
-
-Docker Approved features!!!
-
-![](images/image19.png)
-
-Note:
----
-
-## Do not!
-Docker Experimental features, do not!!! do with caution!!!
-![](images/image20.png)
-
-Note: Don't mount all voulumes
----
-## Even if you do not use any of the techniques we cover
-
 
 ##  Docker aims to be Secure by Default
+
+Common Vulnerabilities and Exposures(CVE) list that docker mitigated,  such that processes run in Docker containers were never vulnerable to the bug—even before it was fixed.
 
 Feature lists are growing...
 
@@ -82,21 +97,24 @@ https://docs.docker.com/engine/security/non-events/
 
 CVE-2013-1956, 1957, 1958, 1959, 1979, CVE-2014-4014, 5206, 5207, 7970, 7975, CVE-2015-2925, 8543, CVE-2016-3134, 3135, CVE-2014-0181, CVE-2015-3339, CVE-2014-4699, CVE-2014-9529, CVE-2015-3214, 4036, CVE-2016-0728, CVE-2016-2383
 
-NOte: bugs with security issue, note for upgrade or patch or downgrade
-CVE stands for:
-non-events:
+Note: This assumes containers are run without adding extra capabilities or not run as --privileged.
 
- Pointers for things that we are covering, seccomp, isolated name spaces, we protect you from nastiy security bugs
+
+Bugs with security issue, note for upgrade or patch or downgrade.
+CVE stands for:Common Vulnerabilities and Exposures
+non-events: never vulnerable
+
+Pointers for things that we are covering, seccomp, isolated name spaces, Docker protect you from nastiy security bugs
 
 ---
-## Container Security Big Picture
+
+
+## Docker Security High-Level Overview
+
 ![](images/docker_secure.png)
 
-Note:
+Note: There are 3 areas to focus, give secure platform and manage and package container images to be distributed iand provide secure access control to the running containers.
 
----
-## Secure Platform
-![](images/secure_platform.png)
 
 ---
 
@@ -111,11 +129,19 @@ Note: Control Groups, `cgroups` are a feature of the Linux kernel that allow you
 
 `Namespaces` provide the first and most straightforward form of isolation: processes running within a container cannot see, and even less affect, processes running in another container, or in the host system.
 
-Each container also gets its own network stack, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
+Each container also gets its own `network stack`, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
 
 ---
 
-## Secure Content
+## Docker Secure Platform
+![](images/secure_platform.png)
+
+Note: Linux Kernel isolation and docker default security setting and add-on Docker customizable profile settings will provide not only secure by default but also provide the additional customizable secure platform.
+
+---
+
+## Docker Secure Content management
+
 #### Deep visibility with binary level scanning
 - Detailed BOM of included components and vulnerability profile
 - Checks packages against CVE database AND the code inside to protect against tampering
@@ -126,7 +152,7 @@ Each container also gets its own network stack, meaning that a container doesn�
 
 ---
 
-## Secure Content
+## Docker Secure Content (1/2)
 ### Image scanning and vulnerability detection
 
 ![](images/secure_content.png)
@@ -145,14 +171,53 @@ If a new vulnerability is reported to the CVE database, a notification is sent t
 Plugin framework - today we have one validation service connected but security scanning was designed in a way to easily add different validation services as needed
 
 ---
+## Docker Secure Content (2/2)
 
-## Image scanning and vulnerability detection
+### Image scanning and vulnerability detection
 
 ![](images/security_scanning.png)
 
 ---
-## Secure Access
+## Docker Secure Access
 ![](images/secure_access.png)
+
+
+Note:
+
+---
+
+## Best way to Understand Security Features
+
+
+- Knowing which tool to use
+- Understand underlying implementation details
+- Learn best practices
+- Learn **Do!** and **Do Not!**
+
+
+---
+
+## Do!
+
+Docker Approved features!!!
+
+Examples:
+
+![](images/image19.png)
+
+Note:
+---
+
+## Do Not!
+Docker Experimental features, do not!!! do with caution!!!
+
+Examples:
+
+![](images/image20.png)
+
+Note: Don't mount all volumes
+
+
 
 ---
 ## How we talk about Docker
@@ -165,66 +230,175 @@ Plugin framework - today we have one validation service connected but security s
 ![](images/howDockerWorks.png)
 
 ---
-## Where can we see this?
+## What kind of tools help to see how docker actually works?
 ```
 top
+htop
+strace
+journalctl
+logs
 ```
----
-# Anatomy of a Container
+
+And other plugin tools.
 
 ---
-## Namespaces: what containers can see
+
+# Isolation
+## Kernel Namespaces and Control Groups
+
+---
+
+## Linux Kernel namespaces
+
+- Provide processes with  their own view of the system
+- Cgroup = limits how much you can user
+- namespaces = limits what you can see and use
+
+|Namespace|constant        |Isolates|
+|-------|:---------------:|-----:|
+|Cgroup |CLONE_NEWCGROUP  |Cgroup root directory|
+|IPC    |SCLONE_NEWIPC    |System V IPC, POSIX message queues|
+|Network|		CLONE_NEWNET	|	Network devices, stacks, ports, etc.|
+|Mount	|	CLONE_NEWNS	    |	Mount points|
+|PID	  |		CLONE_NEWPID  |		Process IDs|
+|User	  |		CLONE_NEWUSER	|	User and group IDs|
+|UTS		|	CLONE_NEWUTS	  |	Hostname and NIS domain name|
+
+Note:
+Man page for namespaces
+
+http://man7.org/linux/man-pages/man7/namespaces.7.html
+
+
+---
+
+## Kernel Namespaces for docker container: what containers can see
+
+- The processes within the namespace, have their own isolated instance of the global resource.
+- Namespaces are materialized by pseudo-files in ``/proc/<pid>/ns``
+
 ```
 ls -la /proc/<pid>/ns/
 ```
-Note: tree of all the namespaced
 
-islated view of the host, network namespaces, user name psaces,
-namespace is segment that container sess.
+```
+> sudo ls -la /proc/1512/ns                                                                                                 
+total 0                                                                                                                     
+dr-x--x--x 2 root root 0 Nov  8 04:12 .                                                                                     
+dr-xr-xr-x 9 root root 0 Nov  8 04:05 ..                                                                                    
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 ipc -> ipc:[4026531839]                                                               
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 mnt -> mnt:[4026531840]                                                               
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 net -> net:[4026531956]                                                               
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 pid -> pid:[4026531836]                                                               
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 user -> user:[4026531837]                                                             
+lrwxrwxrwx 1 root root 0 Nov  8 04:12 uts -> uts:[4026531838]
+```
+
+- Each process is in one namespace of each type
+
+Note: Behind, Docker creates a set of namespaces and control groups for the container.
+tree of all the namespaced
+isolated view of the host, network namespaces, user namspace
+namespace is segment that container sees.
 
 ---
-## What is namespaced?
-|Namespace|Actual flag|Usage|
-|------|:---:|-----:|
-|Cgroup|CLONE_NEWCGROUP|Cgroup root directory|
-|IPC|SCLONE_NEWIPC|System V IPC, POSIX message queues|
-|Network|		CLONE_NEWNET	|	Network devices, stacks, ports, etc.|
-|Mount	|	CLONE_NEWNS	|	Mount points|
-|PID	|		CLONE_NEWPID|		Process IDs|
-|User	|		CLONE_NEWUSER	|	User and group IDs|
-|UTS		|	CLONE_NEWUTS	|	Hostname and NIS domain name|
+## Example using namespaces directly
 
+- Using namespaces API ``unshare()`` to move the calling process to a new namespaces.
 
----
-## Demo using namespaces directly
-Create a shell process with pid and fs namespaces.
+- Create a shell process with pid and fs namespaces.
+
 ```
 $ sudo unshare -fp
 $ sudo unshare -fp --mount-proc
 ```
+Note:
+Man page for namespaces
+http://man7.org/linux/man-pages/man7/namespaces.7.html
 
 ---
-## cgroups: *what containers can use*
-Aka *Control Groups* - limit container resources!
+
+## User Namespaces
+### Start Docker Container with non root user
+
+```
+> sudo docker run --rm --user 1000:1000 alpine  id                                                                           
+uid=1000 gid=1000
+```
+### Allows to map `UID/GUID`
+- UID 0-> 19999 in contianer C1 mapped to UID 10000-11999 on hosts
+- UID 0->19999 in container C2 is mapped to UID 12000->13999 on host
+- etc..
+
+---
+
+## Do not Start Docker Container with Full container capabilities ``–privileged``
+
+
+- lifts all the limitations enforced by the device `cgroup` controller.  
+- the container can then do almost everything that the host can do.
+- This flag exists to allow special use-cases, like _running Docker within Docker_.
+
+Note: example usage for device:
+http://obrown.io/2016/02/15/privileged-containers.html
+
+---
+## cgroup: *Control Groups* 
+
+- Container Resource Metering and limiting
+
 - CPU
 - Memory
 - PIDs
+- Block I/O
+- network (with cooperation from iptables/tc)
+
+
+Note:
+man page for cgroup
+http://man7.org/linux/man-pages/man7/cgroups.7.html
 
 ---
-## cgroups: *what containers can use*
+## CPU cgroup
+
+- Keeps track of user/system CPU time
+- Keeps track of usage of CPU
+- Allows to set weights
+- Can't set CPU time
+
+---
+## `cpuset` cgroup
+- Pin groups to specific CPU(s)
+- Reserve CPUs for specific apps
+- Avoid Processes bouncing between CPUs
+- Also relevant for NUMA systems
+- Provide extra dials and knobs
+
+---
+## cgroups example  with CPUs: *what containers can use*
+
+Running 4 continers on 4 different CPUs
+
 ![](images/cgroup1.png)
 
-Note: Example of 4 containers on 4 cPus
+
 ---
 ## cgroups: *what containers can use*
+
+Limit CPU usage, cgroup can assign CPUs to containers.
+
 ![](images/cgroup2.png)
 
-Note: Example using limit CPU usage, ctroup can assign CPUs to containers one.
-
-Other example for memory, and PId
+Note: Example using limit CPU usage, cgroup can assign CPUs to containers one.
+Other example would be for memory, and PID
 
 ---
 ## cgroups: *what containers can use*
+
+
+fork bump, recursively forking and ran out of resources,
+docker pids limits the number that container can create.
+
 ![](images/cgroup3.png)
 
 note:
@@ -232,7 +406,7 @@ fork bump, recursively forking and ran out of resources,
 docker pids limits the number that container can create.
 
 ----
-### Hands-On Exercise
+### Hands-On Exercise: 
 Set up your AWS instance - check your email!
 
 ```
@@ -245,14 +419,15 @@ ssh -i riyaz.pem ubuntu@ec2-54-149...compute.amazonaws.com
 ```
 ```
 git clone https://github.com/riyazdf/dockercon-workshop.git
-- cgroups directory
 ```
+- **cgroups** directory
+
 NOTE: Ubuntu 15.10 does not support PID limits, but 16.04 does if you have it
 So DO NOT run the fork bomb unless you have another machine.
 
 ---
+
 # Securing Client-Engine Communications
-*My first 5 minutes*
 
 ---
 ## Docker Client Server Architecture
@@ -260,9 +435,7 @@ So DO NOT run the fork bomb unless you have another machine.
 
 ---
 ##Exposing your engine to the internet
-Edit config at
-
-/lib/systemd/system/docker.service
+Edit config at ``/lib/systemd/system/docker.service``
 
 ```
 - ExecStart=/usr/bin/docker daemon -H fd://
@@ -324,6 +497,9 @@ docker-machine  does this automatically to set up TLS for you by default!
 
 ---
 ##Best practice: Mutual TLS
+
+### Do !!!
+
 - Client also presents certificate
   - Sends after verifying server cert
   - Mutual authentication
@@ -352,15 +528,15 @@ $ openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.pem \
 ![](images/usingClientCerts.png)
 
 ---
-#Securing Engine-Registry Communications
 
+#Securing Engine-Registry Communications
 
 ---
 
 ![](images/certsDirectory.png)
 
 ---
-#What is in an image: The Layered Filesystem
+#What is in an image: = The Layered Filesystem
 
 
 ---
@@ -377,6 +553,7 @@ Combine multiple directories to look like a single filesystem
 
 ![](images/supportedImplementations.jpg)
 
+- Rocked Image Layers (R/O)
 
 ---
 ##Copy-on-write
@@ -385,6 +562,8 @@ Combine multiple directories to look like a single filesystem
 
 ---
 ##Best practice: *minimal* base images
+### Do !!!
+
 alpine 					
 - ~ 2 MB from hub (1 layer!)
 - musl libc and busybox
@@ -393,6 +572,7 @@ ubuntu
 
 ---
 ##Best practice: verify content
+### Do!!!
 ```
 RUN apt-key adv \
       --keyserver hkp://keyserver.ubuntu.com:80 \
@@ -403,6 +583,7 @@ RUN apt-key adv \
 
 ---
 ##Best practice: read only containers
+### Do!!!
 ```
 $ docker run it --rm --read-only alpine sh
 ```
@@ -411,12 +592,15 @@ Mounts the container’s FS as read-only
 
 ---
 ##Best practice: read-only Volumes
+### Do!!!
 ```
 -v /data:/data:ro
 ```
 
 ---
 ##Common mistake: mount host location as writable
+### CAUTION!!!
+
 ```
 $ docker run it --rm -v /:/host alpine sh
 ```
@@ -473,8 +657,8 @@ Implementation detail
 : use mutual TLS between pairs of services that need to talk to each other.
 
 ---
-#User Management
 
+#User Management
 
 ---
 ##Default runs as root
@@ -687,7 +871,7 @@ statically linked binaries
 ---
 #Hands-On Exercise
 github.com/riyazdf/dockercon-workshop
-- *trust* directory
+- **trust** directory
 
 ---
 #Capabilities
@@ -810,9 +994,9 @@ $ docker run --privileged …
 
 
 ---
-##More information
+##Hands-On Exercise
 github.com/riyazdf/dockercon-workshop
-- capabilities directory
+- **capabilities** directory
 
 ---
 #Seccomp
@@ -927,9 +1111,9 @@ sudo: effective uid is not 0, is /usr/bin/sudo on a file system with the 'nosuid
 
 
 ---
-##More information
+##Hands-On Exercise
 github.com/riyazdf/dockercon-workshop
- - seccomp  directory
+ - **seccomp**  directory
 ```
 $ docker run --rm -it --security-opt seccomp=default-no-chmod.json alpine chmod 777 /
 ```
@@ -1036,7 +1220,7 @@ This one’s a little harder to do “by accident”
 ---
 ##Hands-On Exercise
 github.com/riyazdf/dockercon-workshop
- - apparmor directory
+ - **apparmor** directory
 
 
 ---
