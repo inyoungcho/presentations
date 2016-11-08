@@ -12,18 +12,17 @@ This workshop is part of docker training add on module, security deep dive. This
 
 ## Agenda
 
-- Introduction
+- **Introduction**
 - Overview of Docker Security
 - Isolation: Kernel namespaces and Control Groups
-
-Secure Docker Platform
-    - Isolation of Application containers
-    - Kernel hardening
--  Secure Docker Contents
-    - Trusted contents
-    - Image security and layers
-- Secure Dcoker Access
-    - User Management
+- Securing Client-Engine Communications
+- Networks
+- User Management
+- Image Distribution
+- Docker Security Scanning (Nautilus)
+- Seccomp
+- Capabilities
+- Linux Security Modules
 
 ---
 
@@ -66,6 +65,21 @@ We will cover the followings;
     - Expectations from this course?
 
 ---
+## Agenda
+
+- Introduction
+- **Overview of Docker Security**
+- Isolation: Kernel namespaces and Control Groups
+- Securing Client-Engine Communications
+- Networks
+- User Management
+- Image Distribution
+- Docker Security Scanning (Nautilus)
+- Seccomp
+- Capabilities
+- Linux Security Modules
+
+---
 
 
 # Overview of Docker Security
@@ -82,8 +96,6 @@ We will cover the followings;
 
 Note: To answer these questions, we need to understand how docker is implemented.
 Docker first started out as creating a runtime mechanism where containers could – application code can be contained in a container image and then run on a host. And that provided a useful ability to move things around, but – move things around and run them and get the code up and running and going. But the really interesting dynamics came when Docker became, in a sense, a package manager. And what I mean by a package manager was, there was ability to share containers, ability to build on top of containers, on top of other images, and to build workflows around sharing those containers.  When you apply the security lens to these containers and workflows, the following questions arise that must be addressed "Is Docker container secure to use?"
-
-
 
 ---
 
@@ -242,9 +254,23 @@ logs
 And other plugin tools.
 
 ---
+## Agenda
 
-# Isolation
-## Kernel Namespaces and Control Groups
+- Introduction
+- Overview of Docker Security
+- **Isolation: Kernel namespaces and Control Groups**
+- Securing Client-Engine Communications
+- Networks
+- User Management
+- Image Distribution
+- Docker Security Scanning (Nautilus)
+- Seccomp
+- Capabilities
+- Linux Security Modules
+
+---
+
+# Isolation: Kernel Namespaces and Control Groups
 
 ---
 
@@ -426,7 +452,21 @@ NOTE: Ubuntu 15.10 does not support PID limits, but 16.04 does if you have it
 So DO NOT run the fork bomb unless you have another machine.
 
 ---
+## Agenda
 
+- Introduction
+- Overview of Docker Security
+- Isolation: Kernel namespaces and Control Groups
+- **Securing Client-Engine Communications**
+- Networks
+- User Management
+- Image Distribution
+- Docker Security Scanning (Nautilus)
+- Seccomp
+- Capabilities
+- Linux Security Modules
+
+---
 # Securing Client-Engine Communications
 
 ---
@@ -449,17 +489,17 @@ $ sudo systemctl restart docker
 
 ---
 ##One Way TLS
-Same way we trust websites:
-- Server cert and key on engine
-- CA cert on client
-- client authenticates Docker engine
-Docker client
-
-![](images/oneWayTSL.png)
+                                    |
+:----------------------------------:|:-------------------------:
+Same way we trust websites:         | ![](images/oneWayTSL.png)
+- Server cert and key on engine     |
+- CA cert on client                 |
+- client authenticates Docker engine|
 
 ---
 ## Creating a CA
-use a strong passphrase!
+###use a strong passphrase!
+
 ```
 $ openssl genrsa -aes256 -out ca-key.pem 4096
 $ openssl req -new -x509 -days 365 -key ca-key.pem -sha256 -out ca.pem
@@ -481,32 +521,53 @@ $ sudo cp ca.pem /root/.docker/ca.pem
 ---
 ##Starting the daemon with the cert and key
 
-![](images/startingDaemon.png)
+```
+$ tree /etc/docker
+├── key.json
+├── server.pem
+├── server-key.pem
+```
+
+```
+$ /usr/bin/docker daemon \
+-H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock \ --storage-driver aufs \
+--tlsverify \
+--tlscert /etc/docker/server.pem \
+--tlskey /etc/docker/server-key.pem
+```
 
 ---
 ##Trusting the daemons cert on the client
 
-![](images/trustingDaemon.png)
+```
+$ tree ~/.docker
+├── config.json
+├── ca.pem
+```
 
-
+```
+$ export DOCKER_CERT_PATH=~/my_cert_directory
+$ tree ~/my_cert_directory
+├── ca.pem
+```
 
 ---
 ##Secure by default: docker-machine
-docker-machine  does this automatically to set up TLS for you by default!
+
+
+### **docker-machine**  does this automatically to set up TLS for you by default!
 
 
 ---
 ##Best practice: Mutual TLS
 
 ### Do !!!
-
-- Client also presents certificate
-  - Sends after verifying server cert
-  - Mutual authentication
-- Client CA on daemon (engine)
-
-![](images/mutualTLS.png)
-
+                                    |
+:-----------------------------------:|:-------------------------:
+- Client also presents certificate   |  ![](images/mutualTLS.png)
+  - Sends after verifying server cert |
+  - Mutual authentication             |
+- Client CA on daemon (engine)         |
 
 ---
 ##Creating client cert and key
@@ -516,20 +577,52 @@ $ echo extendedKeyUsage = clientAuth > extfile.cnf
 $ openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.pem \
     -CAkey ca-key.pem -CAcreateserial -out cert.pem -extfile extfile.cnf
 ```
+###  ca.pem can (and should) be a different CA
 
 ---
 ##Trusting the client cert on the daemon
 
-![](images/trustingClientCert.png)
+`ca.pem` key is used!
+
+```
+$ tree /etc/docker
+├── key.json
+├── server.pem
+├── server-key.pem
+├── ca.pem
+```
+
+```
+$ /usr/bin/docker daemon \
+-H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock \ --storage-driver aufs \
+--tlsverify \
+--tlscert /etc/docker/server.pem \
+--tlskey /etc/docker/server-key.pem
+--tlscacert /etc/docker/ca.pem
+```
 
 ---
 ##Using the client certs on the client
 
-![](images/usingClientCerts.png)
+```
+$ tree ~/.docker
+├── config.json
+├── ca.pem
+├── cert.pem
+├── key.pem
+```
+
+```
+$ export DOCKER_CERT_PATH=~/my_cert_directory
+$ tree ~/my_cert_directory
+├── ca.pem
+├── cert.pem
+├── key.pem
+```
 
 ---
 
-#Securing Engine-Registry Communications
+##Securing Engine-Registry Communications
 
 ---
 
