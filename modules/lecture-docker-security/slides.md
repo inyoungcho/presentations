@@ -1,6 +1,5 @@
 # Docker Security Workshop
 
-
 Note:
 This workshop is part of docker training add on module, security deep dive. This is one day workshop with lecture and labs.
 
