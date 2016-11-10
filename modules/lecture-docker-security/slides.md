@@ -352,7 +352,7 @@ uid=1000 gid=1000
 
 ---
 
-## cgroup: *Control Groups* 
+## cgroup: *Control Groups*
 
 - Container Resource Metering and limiting
 
@@ -431,7 +431,7 @@ http://obrown.io/2016/02/15/privileged-containers.html
 
 ---
 
-## Hands-On Exercise: 
+## Hands-On Exercise:
 Set up your AWS instance - check your email!
 
 ```
@@ -1274,7 +1274,7 @@ github.com/riyazdf/dockercon-workshop
 ---
 
 ##Docker Bench
-https://dockerbench.com
+https://dockerBench.com
 
 - Open-source tool for running automated tests
   - inspired by the CIS Docker 1.11 benchmark
@@ -1435,7 +1435,7 @@ $ tree ~/my_cert_directory
 ### Do !!!
 
 - Client also presents certificate   
-  - Sends after verifying server cert 
+  - Sends after verifying server cert
   - Mutual authentication             
 - Client CA on daemon (engine)         
 
