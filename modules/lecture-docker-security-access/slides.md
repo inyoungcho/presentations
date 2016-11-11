@@ -9,30 +9,33 @@ $ whoami
 root
 $ id
 uid=0(root) gid=0(root)
-$ # WREAK HAVOC TIME!  Please don’t do this
-$ rm /host/bin/sh # Again, please don’t do this
 ```
+- Please **DO NOT** do this
 
 ---
 
-## root in container == root outside container
+## Container root user
+
+- root in container == root outside container
+- We do not want this to be the case!
+- How can we change this?
+
 ![](images/rootUser.png)
-We do not want this to be the case!
-How can we change this?
+
 
 ---
 
 ## Step in the right direction: run as a user
-- Use the --user flag with UID:GID argument
+
+- Use the ``--user`` flag with UID:GID argument
 
 ```
-$ docker run -v /bin:/host/bin --user 10000:10000 -it --rm alpine sh
+$ docker run -v /bin:/host/bin --user 1000:10000 -it --rm alpine sh
 $ whoami
 whoami: unknown uid 10000
 $ id
 uid=10000 gid=10000
-$ rm /host/bin/sh
-rm: can’t remove ‘sh’: Permission denied
+
 ```
 
 ---
@@ -40,16 +43,16 @@ rm: can’t remove ‘sh’: Permission denied
 ## But I still want *root* inside container
 ![](images/dockerUser.png)
 
-Perhaps we need to run a command that needs to look like it’s root in the container, but we don’t want to give it
-true
- root access to the underlying host
+Run a command that needs to look like `root` in the container, without giving
+`root` access to the underlying host
 
 ---
 
 ## Enable user namespaces
-```
-$ docker daemon --userns-remap [uid[:gid]]
-```
+
+- Use the ``--userns-remap`` flag with UID:GID argument
+
+
 ![](images/userNamespaces.png)
 
 ---
@@ -59,8 +62,9 @@ $ docker daemon --userns-remap [uid[:gid]]
 $ docker daemon --userns-remap [uid[:gid]]
 ```
 - Will need to re-pull images and re-create volumes due to container resource and image layer permissions
-  - Leave this feature on in production; switching back and forth should only be done in development
-  ![](images/userNamespace2.png)
+- Leave this feature on in production; switching back and forth should only be done in development
+
+![](images/userNamespace2.png)
 
 ---
 

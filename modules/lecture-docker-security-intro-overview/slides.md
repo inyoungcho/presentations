@@ -69,7 +69,7 @@ Feature lists are growing...
 
 https://docs.docker.com/engine/security/non-events/
 
-CVE-2013-1956, 1957, 1958, 1959, 1979, CVE-2014-4014, 5206, 5207, 7970, 7975, CVE-2015-2925, 8543, CVE-2016-3134, 3135, CVE-2014-0181, CVE-2015-3339, CVE-2014-4699, CVE-2014-9529, CVE-2015-3214, 4036, CVE-2016-0728, CVE-2016-2383
+[CVE-2013-1956](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-1956), 1957, 1958, 1959, 1979, CVE-2014-4014, 5206, 5207, 7970, 7975, CVE-2015-2925, 8543, CVE-2016-3134, 3135, CVE-2014-0181, CVE-2015-3339, CVE-2014-4699, CVE-2014-9529, CVE-2015-3214, 4036, CVE-2016-0728, CVE-2016-2383
 
 Note: This assumes containers are run without adding extra capabilities or not run as --privileged.
 
@@ -144,7 +144,7 @@ Note: Linux Kernel isolation and docker default security setting and add-on Dock
 - Docker Client and Docker Engine communicate via UNIX socket or TCP socket.
 - Client authenticates Docker engine
 
-CA cert  ![](images/oneWayTSL.png)  Server cert and key
+cert  ![](images/oneWayTSL.png)  cert and key
 
 Note: https://docs.docker.com/engine/security/https/
 Protect the Docker daemon socket, Secure communication is similar to secure website.
@@ -164,7 +164,7 @@ You can use  OpenSSL, x509 and TLS to setup your own TLS.
   - Mutual authentication             
 - Client CA on daemon (engine)         
 
-![](images/mutualTLS.png)
+cert and key  ![](images/mutualTLS.png) cert and key
 
 Note: Mutual TLS can be the recommended, specially your set up is exposing engine to the internet.
 
@@ -274,7 +274,8 @@ We have separate training covering DTR.
 
 ## Secure Cluster Management
 - Docker 1.12 integrates **SWARM**.
-- Strong default swarm security: communications between managers and workers is secured via Mutual TLS
+- create and manage TLS certificates to secure your cluster
+- communications between managers and workers is secured via Mutual TLS
 
 ![](images/clusterManagement.png)
 
@@ -294,7 +295,7 @@ Certificates are rotated frequently to ensure all identities are still accurate.
 ## SWARM mode: Mutual TLS by default
 - Leader acts as CA. Any Manager can be promoted to leader.
 - Workers and managers identified by their certificate.
-Communications secured with Mutual TLS.
+- Communications secured with Mutual TLS.
 
 ![](images/swarmMutualTLS.png)
 
@@ -307,8 +308,10 @@ However, leaders are the only ones that can write to raft and issue certificates
 ---
 
 ## SWARM mode: Support for External CAs
-- Managers support BYO CA.
-- Forwards CSRs to external CA.
+- Support for your own CA
+- Forwards CSR(certificate signing request)s to external CA.
+
+![](images/swarmExternalCertificate.png)
 
 ---
 
@@ -355,7 +358,7 @@ sh docker-bench-security.sh
 Learn more on this blog:
 https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/
 
-----
+---
 
 ## Docker Bench Output
 Run your hosts against the Docker Bench

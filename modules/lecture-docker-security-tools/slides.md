@@ -2,31 +2,49 @@
 
 ---
 
-## Root vs Not Root
-Capabilities breakdown root permissions into groups that can be individually allowed or blocked
-- Often don’t want or need all root permissions
-- Can reduce attack surface by reducing capabilities
+##  To  be Root vs Not to be Root
+
+- `Capabilities` breakdown `root` permissions into groups that can be individually allowed or blocked
+	- Often do not want or need all root permissions
+	- Can reduce attack surface by reducing capabilities
+
+Note: http://man7.org/linux/man-pages/man7/capabilities.7.html
 
 ---
 
 ## Docker Default Capabilities
 In whitelist:
 ```		
-    "CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_FSETID",
-		"CAP_FOWNER",
-		"CAP_MKNOD",
-		"CAP_NET_RAW",
-		"CAP_SETGID",
-		"CAP_SETUID",
-		"CAP_SETFCAP",
-		"CAP_SETPCAP",
-		"CAP_NET_BIND_SERVICE",
-		"CAP_SYS_CHROOT",
-		"CAP_KILL",
-		"CAP_AUDIT_WRITE",
+"CAP_CHOWN",
+"CAP_DAC_OVERRIDE",
+"CAP_FSETID",
+"CAP_FOWNER",
+"CAP_MKNOD",
+"CAP_NET_RAW",
+"CAP_SETGID",
+"CAP_SETUID",
+"CAP_SETFCAP",
+"CAP_SETPCAP",
+"CAP_NET_BIND_SERVICE",
+"CAP_SYS_CHROOT",
+"CAP_KILL",
+"CAP_AUDIT_WRITE",
 ```
+
+Note:
+Note: http://man7.org/linux/man-pages/man7/capabilities.7.html
+
+CAP_CHOWN
+              Make arbitrary changes to file UIDs and GIDs (see chown(2)).
+
+CAP_DAC_OVERRIDE
+              Bypass file read, write, and execute permission checks.  (DAC
+              is an abbreviation of "discretionary access control".)
+
+CAP_FSETID
+	Don't clear set-user-ID and set-group-ID mode bits when a file
+  is	does not match the filesystem or any of the supplementary GIDs
+	of the calling process.
 
 ---
 
@@ -47,6 +65,11 @@ Not In whitelist:
 "CAP_SYSLOG",		“CAP_WAKE_ALARM",
 ```
 
+Note:
+CAP_AUDIT_CONTROL (since Linux 2.6.11)
+              Enable and disable kernel auditing; change auditing filter
+              rules; retrieve auditing status and filtering rules.
+
 ---
 
 ## How do we add/remove capabilities?
@@ -55,6 +78,8 @@ docker run --cap-add
 docker run --cap-drop
 docker run --cap-drop ALL --cap-add $CAP
 ```
+
+Where `$CAP` starts with `CAP_`
 
 ---
 
@@ -72,20 +97,16 @@ cap_drop:
 ---
 
 ## What to watch out for
-Read the fine print for each capability!
-- man capabilities
-- i.e. removing
-CAP_KILL
+- Read the fine print for each capability!
+	- man capabilities
+	``$ man capabilities``
+
+	- i.e. removing CAP_KILL
  only requires permissions checks and enabling bypasses permissions checks. It doesn’t generically enable/disable the ability to kill
-- CAP_SYS_ADMIN
-is nearly root...
+- CAP_SYS_ADMIN is nearly root...
 
 ---
-## What to watch out for
-```
-$ man capabilities
-```
----
+
 
 ## Capabilities and Docker
 - No extended attributes in images -> no capabilities elevation normally possible
@@ -112,8 +133,28 @@ docker run --user
 
 ---
 
+## Docker Capabilities examples
+
+- Remember that Docker does not use the "CAP" prefix when addressing capability constants.
+
+	- Start a new container and prove that the container's root account can change the ownership of files.
+
+``sudo docker run --rm -it alpine chown nobody /``
+
+	- Start another new container and drop all capabilities for the containers root account other than the ``CAP_CHOWN`` capability.
+
+``sudo docker run --rm -it --cap-drop ALL --cap-add CHOWN alpine chown nobody /``
+
+	- Listing all capabilities, start a new container using Alpine Linux, install the `libcap` package and then list capabilities.
+
+``sudo docker run --rm -it alpine sh -c 'apk add -U libcap; capsh --print'``
+
+---
+
 ## What to watch out for
-$ docker run --privileged …
+
+``$ docker run --privileged …``
+
 - gives *all capabilities* to the container, also lifts limitations from  *device* cgroup
 
 
@@ -131,12 +172,18 @@ github.com/riyazdf/dockercon-workshop
 
 ---
 
-## Original Seccomp
+## Seccomp
+
+- Linux system call operates on the Secure Computing (seccomp) state of the calling process
+- An application sandboxing mechanism in the Linux kernel
+- Original Seccomp
 On-off feature that disabled all system calls except:
-- exit()
-- read()
-- write()
-- sigreturn()
+	- ``exit()``
+	- ``read()``
+	- ``write()``
+	- ``sigreturn()``
+
+Note: http://man7.org/linux/man-pages/man2/seccomp.2.html
 
 ---
 
@@ -146,44 +193,131 @@ On-off feature that disabled all system calls except:
 - Uses Berkeley Packet Filters (BPF)
 - Allows examining system calls in detail before making a decision
 
+Note:
+
+More info on seecomp
+http://man7.org/conf/lpc2015/limiting_kernel_attack_surface_with_seccomp-LPC_2015-Kerrisk.pdf
+
 ---
 
-## Is it enabled?
+## Seccomp enabled?
 In the kernel:
 ```
-$ grep SECCOMP /boot/config-$(uname -r) # or zgrep SECCOMP /proc/config.gz
+$ grep SECCOMP /boot/config-$(uname -r)
 CONFIG_SECCOMP=y
 CONFIG_SECCOMP_FILTER=y
 ```
-In docker:
-```
-$ docker run --rm alpine grep Seccomp /proc/self/status
-```
+
 In docker 1.12:
 ```
 $ docker info
+...
+Security Options: apparmor seccomp
+...
+```
+
+Note:
+https://docs.docker.com/engine/security/seccomp/
+
+In docker prior to 1.12:
+```
+$ docker run --rm alpine grep Seccomp /proc/self/status
 ```
 
 ---
 
-## Default Whitelist
-Lots of system calls, what’s excluded:
+## Docker Run with seccomp profile for a container
+
+```
+$ docker run --rm -it --security-opt seccomp=/path/to/seccomp/profile.json hello-world
+```
+
+with ``profile.json``
+
+```
+{
+	"defaultAction": "SCMP_ACT_ERRNO",
+	"architectures": [
+		"SCMP_ARCH_X86_64",
+		"SCMP_ARCH_X86",
+		"SCMP_ARCH_X32"
+	],
+	"syscalls": [
+		{
+			"name": "accept",
+			"action": "SCMP_ACT_ALLOW",
+			"args": []
+		},
+		{
+			"name": "accept4",
+			"action": "SCMP_ACT_ALLOW",
+			"args": []
+		},
+		...
+	]
+}
+```
+
+Note: https://docs.docker.com/engine/security/seccomp/
+
+---
+
+## Run without the default seccomp profile
+```
+$ docker run --rm -it --security-opt seccomp=unconfined debian:jessie \
+    unshare --map-root-user --user sh -c whoami
+		```
+
+
+---
+
+## Significant syscalls blocked by the default profile
+
+Lots of system calls, what is excluded:
 
 ![](images/defaultWhitelist.png)
 
 ---
 
-## The strace tool
+## What syscalls are used for a command with the strace tool
+
+- show which syscalls are being used for `ls`
+
 ```
-$ strace -c -f -S name ls 2>&1 1>/dev/null | tail -n +3 | head -n -2 | awk '{print $(NF)}'
+$ strace -c -f -S name ls 2>&1 1>/dev/null | tail -n +3 | head -n -2 | awk '{print $(NF)}'                        
+access                                                                                                            
+arch_prctl                                                                                                        
+brk                                                                                                               
+close                                                                                                             
+execve                                                                                                            
+fstat                                                                                                             
+getdents                                                                                                          
+getrlimit                                                                                                         
+ioctl                                                                                                             
+mmap                                                                                                              
+mprotect                                                                                                          
+munmap                                                                                                            
+open                                                                                                              
+read                                                                                                              
+rt_sigaction                                                                                                      
+rt_sigprocmask                                                                                                    
+set_robust_list                                                                                                   
+set_tid_address                                                                                                   
+statfs                                                                                                            
+write    
+
 ```
-![](images/strace.png)
+
+Note: strace can be used to get a list of all system calls made by a program. It's a very good starting point for writing seccomp policies. Here's an example of how we can list all system calls made by ls:
+
 
 ---
 
-## Docker seccomp profile DSL
-Seccomp
- policy example:
+## Docker seccomp profile DSL(Domain Specific Language)
+
+- Seccomp policy example:
+	- Docker custom format for our JSON to specify `seccom`p
+
 ```
 {
      "defaultAction": "SCMP_ACT_ERRNO",
@@ -203,17 +337,13 @@ Seccomp
 }
 ```
 
-Possible actions:
-- SCMP_ACT_KILL
-- SCMP_ACT_TRAP
-- SCMP_ACT_ERRNO
-- SCMP_ACT_TRACE
-- SCMP_ACT_ALLOW
+- Possible actions:
+  - ``SCMP_ACT_KILL, SCMP_ACT_TRAP, SCMP_ACT_ERRNO, SCMP_ACT_ALLOW``
 
 ---
 
-## Docker seccomp profile DSL
-More complex filters:
+## Docker seccomp profile DSL(Domain Specific Language)
+- More complex filters:
 ```
 "args": [
   {
@@ -224,21 +354,21 @@ More complex filters:
     }
 ]
 ```
-2080505856 == 0x7C020000
+- 2080505856 == 0x7C020000
 
 ---
 
 ## Seccomp and the no-new-privileges option
-Seccomp policies have to be applied before executing your container and be less specific unless you use:
+- Seccomp policies have to be applied before executing your container and be less specific unless you use:
 ```
 --security-opt no-new-privileges
 ```
-In this case you need to allow only futex stat execve.
-This flag also disables setuid binaries:
+- In this case you need to allow only system call; `futex`(fast userspace mutex) `stat` `execve`.
+- This flag also disables setuid binaries:
 ```
 $ sudo ls
 ```
-sudo: effective uid is not 0, is /usr/bin/sudo on a file system with the 'nosuid' option set or an NFS file system without root privileges?
+- sudo: effective uid is not 0, is /usr/bin/sudo on a file system with the 'nosuid' option set or an NFS file system without root privileges?
 
 ---
 
@@ -251,7 +381,6 @@ $ docker run --rm -it --security-opt seccomp=default-no-chmod.json alpine chmod 
 chmod: /: Operation not permitted
 
 
-
 ---
 
 # Linux Security Modules
@@ -259,14 +388,14 @@ chmod: /: Operation not permitted
 ---
 
 ## What is a LSM?
-A plugin to the linux kernel that allows us to set policies to restrict what a process can do.
+- A plugin to the linux kernel that allows us to set policies to restrict what a process can do.
 - **Mandatory Access Control**: instead of using user-defined permissions to specify access, the underlying system describes permissions itself with labels
 
 ---
 
 ## What is a LSM?
-Under the hood:
-- each LSM implements a kernel interface that hooks into user-level syscalls about to access an important kernel object (inodes, task control blocks, etc.), either allowing them to pass through or denying them outright depending on the application profile
+- Under the hood:
+	- each LSM implements a kernel interface that hooks into user-level syscalls about to access an important kernel object (inodes, task control blocks, etc.), either allowing them to pass through or denying them outright depending on the application profile
 ![](images/LSM.png)
 
 ---
@@ -282,16 +411,17 @@ Under the hood:
 ---
 
 ## Deep Dive - AppArmor: File Access Management
-AppArmor uses globbing and deny syntax to express filepath restrictions
+- AppArmor uses globbing and deny syntax to express filepath restrictions
 
-- Deny read/write/lock/link/execute on files in /sys/  
+	- Deny read/write/lock/link/execute on files in /sys/  
 ```
   deny /sys/* rwklx
  ```
-- Deny on files in /sys/ and subdirectories
+	- Deny on files in /sys/ and subdirectories
 ```
 deny /sys/** rwklx
 ```
+
 ---
 
 ## Deep Dive - AppArmor: Networking Management
@@ -327,29 +457,31 @@ $ sudo apt install apparmor-utils
 ```
 $ aa-complain <PATH_TO_PROFILE>
 ```
-Watch AppArmor block things!
+- Watch AppArmor block things!
 
 ```
 $ aa-genprof <PATH_TO_BINARY>
 ```
-Interactive profile generation!
+- Interactive profile generation!
 
 ---
 
 ## Do I still need Seccomp and Cap-drop?
 ### Why not?  
-Docker sets a profile for each setting by default
-- Some overlap but each feature still adds unique functionality
-- Defense-in-depth
+- Docker sets a profile for each setting by default
+	- Some overlap but each feature still adds unique functionality
+	- Defense-in-depth
 
 ---
 
 ## Common mistake: disabling profiles
-- SELinux: setenforce 0 (on daemon)
-http://stopdisablingselinux.com/
-- AppArmor: --security-opt apparmor:unconfined (ondocker run)
-This one’s a little harder to do “by accident”
-- docker run --privileged
+- SELinux: `setenforce 0` (on daemon)
+	- http://stopdisablingselinux.com/
+
+
+- AppArmor: ``--security-opt apparmor:unconfined`` (on docker run)
+
+- ``docker run --privileged``
 
 ---
 
@@ -359,20 +491,7 @@ github.com/riyazdf/dockercon-workshop
 
 ---
 
-## Docker Bench
-https://dockerbench.com
 
-- Open-source tool for running automated tests
-  - inspired by the CIS Docker 1.11 benchmark
-- Runs against containers currently running on same host
-- Checks for AppArmor, read-only volumes, etc...
-
----
-## Docker Bench
-
-![](images/dockerBench.png)
-
----
 
 ## View from 10,000 feet: Docker Security Checklist
 - Build:
@@ -391,7 +510,7 @@ https://dockerbench.com
 ---
 
 ## Running your own Notary
-Deploy a notary
+- Deploy a notary
 ```
 $ git clone https://github.com/docker/notary.git
 $ cd notary
@@ -407,6 +526,6 @@ $ docker-compose up
 (admin)$ notary publish <GUN>
 ```
 
-Docker engine >= 1.11 will sign with delegation keys if it detects them
+- Docker engine >= 1.11 will sign with delegation keys if it detects them
 
 ---

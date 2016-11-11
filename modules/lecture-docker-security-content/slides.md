@@ -29,20 +29,44 @@ https://blog.docker.com/2015/10/docker-basics-webinar-qa/
 ---
 
 ## Supported Implementations
-- Aufs
-- Btrfs
-- OverlayFS
-- Devicemapper
+
+- Rocked Image Layers (R/O)
+
+  - Aufs
+  - Btrfs
+  - OverlayFS
+  - Devicemapper
+
+- Container Layer
+- Union Mount point
 
 ![](images/supportedImplementations.jpg)
 
 - Rocked Image Layers (R/O)
 
+Note: Each Docker image references a list of read-only layers
+
+
 ---
 
 ## Copy-on-write
+- The major difference between a container and an image is the top writable layer.
+- Each containers get its own writable layers
+- Reduces the amount of space consumed by containers
+- Reduces the time required to start a container
 
 ![](images/copyonwrite.jpg)
+
+Note:
+All writes to the container that add new or modify existing data are stored in this writable layer. When the container is deleted the writable layer is also deleted. The underlying image remains unchanged.
+
+Because each container has its own thin writable container layer, and all changes are stored in this container layer, this means that multiple containers can share access to the same underlying image and yet have their own data state. The diagram below shows multiple containers sharing the same Ubuntu 15.04 image.
+
+- Sharing promotes smaller images
+- Copying makes containers efficient
+  - All writes made to a container are stored in the thin writable container layer. The other layers are read-only (RO) image layers and can’t be changed. This means that multiple containers can safely share a single underlying image.
+
+  - Docker’s copy-on-write strategy not only reduces the amount of space consumed by containers, it also reduces the time required to start a container
 
 ---
 
@@ -277,7 +301,7 @@ Use official images when possible!
 
 ---
 
-## Docker Security Scanning (Nautilus)
+## Docker Security Scanning
 ![](images/dockerRegistryScan.png)
 
 https://hub.docker.com/r/library/alpine/tags/
@@ -286,7 +310,7 @@ https://hub.docker.com/r/library/alpine/tags/
 
 ---
 
-## Docker Security Scanning (Nautilus)
+## Docker Security Scanning
 ![](images/dockerSecurityScanning.png)
 
 - Checks against CVE database for declared layers

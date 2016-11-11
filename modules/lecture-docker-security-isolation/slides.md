@@ -6,11 +6,11 @@
 ## Linux Kernel namespaces
 
 - Provide processes with  their own view of the system
-- namespaces = limits what you can see and use
-- Cgroup = limits how much you can user
+  -  namespaces = limits what you can see and use
+  - Cgroup = limits how much you can user
 
-|Namespace|constant        |Isolates|
-|-------|:---------------:|-----:|
+|Namespace|constant |Isolates|
+|-------|:---------------:|:-----|
 |Cgroup |CLONE_NEWCGROUP  |Cgroup root directory|
 |IPC    |SCLONE_NEWIPC    |System V IPC, POSIX message queues|
 |Network|		CLONE_NEWNET	|	Network devices, stacks, ports, etc.|
@@ -146,9 +146,9 @@ Running 4 continers on 4 different CPUs
 
 ## cgroups: *what containers can use*
 
-Limit CPU usage, cgroup can assign CPUs to containers.
+- Limit CPU usage, cgroup can assign CPUs to containers.
 
-- `docker run ``
+- ``docker run``
   - ``--cpu-shares``	CPU shares (relative weight)
   - ``--cpuset-cpus``	CPUs in which to allow execution (0-3, 0,1)
   - ``--pids-limit``	Tune container pids limit (set -1 for unlimited)
@@ -164,6 +164,9 @@ Other example would be for memory, and PID
 `htop` output using ``--cpuset-cpu`` to 2
 
 ![](images/htop_2cpuset.png)
+
+Note:
+This node has 2 CPUs
 
 ---
 
