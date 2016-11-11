@@ -1,23 +1,8 @@
-## Agenda
-
-- Introduction
-- Overview of Docker Security
-- Isolation: Kernel Namespaces and Control Groups
-- #### User Management
-- Secure Image
-- Networks
-- Image Distribution
-- Capabilities
-- Seccomp
-- Linux Security Modules
+# User Management
 
 ---
 
-#User Management
-
----
-
-##Default runs as root
+## Default runs as root
 ```
 $ docker run -v /bin:/host/bin -it --rm alpine sh
 $ whoami
@@ -30,14 +15,14 @@ $ rm /host/bin/sh # Again, please don’t do this
 
 ---
 
-##root in container == root outside container
+## root in container == root outside container
 ![](images/rootUser.png)
 We do not want this to be the case!
 How can we change this?
 
 ---
 
-##Step in the right direction: run as a user
+## Step in the right direction: run as a user
 - Use the --user flag with UID:GID argument
 
 ```
@@ -52,7 +37,7 @@ rm: can’t remove ‘sh’: Permission denied
 
 ---
 
-##But I still want *root* inside container
+## But I still want *root* inside container
 ![](images/dockerUser.png)
 
 Perhaps we need to run a command that needs to look like it’s root in the container, but we don’t want to give it
@@ -61,7 +46,7 @@ true
 
 ---
 
-##Enable user namespaces
+## Enable user namespaces
 ```
 $ docker daemon --userns-remap [uid[:gid]]
 ```
@@ -69,7 +54,7 @@ $ docker daemon --userns-remap [uid[:gid]]
 
 ---
 
-##Enable user namespaces - common pitfalls
+## Enable user namespaces - common pitfalls
 ```
 $ docker daemon --userns-remap [uid[:gid]]
 ```
@@ -79,7 +64,7 @@ $ docker daemon --userns-remap [uid[:gid]]
 
 ---
 
-##Hands-On Exercise && break
+## Hands-On Exercise && break
 ```
 github.com/riyazdf/dockercon-workshop
 ```

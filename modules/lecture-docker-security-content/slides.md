@@ -1,29 +1,30 @@
 
 
-## Agenda
 
-- Introduction
-- Overview of Docker Security
-- Isolation: Kernel Namespaces and Control Groups
-- User Management
-- ####Secure Image
-- Networks
-- Image Distribution
-- Capabilities
-- Seccomp
-- Linux Security Modules
+
+
+# Secure Image
+
 
 ---
 
-#Secure Image
+## What is a layered filesystem?
 
-### WHAT IS IN AN IMAGE: = THE LAYERED FILESYSTEM
+WHAT IS IN AN IMAGE: = THE LAYERED FILESYSTEM
 
----
+- Union filesystem
+  - Combine multiple directories to look like a single filesystem
+  - Tombstoning/whiteout files to delete files from lower layers
 
-##What is a layered filesystem?
-Combine multiple directories to look like a single filesystem
-- Tombstoning/whiteout files to delete files from lower layers
+- Copy-on-write
+
+Note:
+
+Learn Docker layer filesystem
+https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/
+
+Blog has video on Docker Storage
+https://blog.docker.com/2015/10/docker-basics-webinar-qa/
 
 ---
 
@@ -39,13 +40,13 @@ Combine multiple directories to look like a single filesystem
 
 ---
 
-##Copy-on-write
+## Copy-on-write
 
 ![](images/copyonwrite.jpg)
 
 ---
 
-##Best practice: *minimal* base images
+## Best practice: *minimal* base images
 ### Do !!!
 
 alpine 					
@@ -56,7 +57,7 @@ ubuntu
 
 ---
 
-##Best practice: verify content
+## Best practice: verify content
 ### Do!!!
 ```
 RUN apt-key adv \
@@ -77,7 +78,7 @@ Mounts the container’s FS as read-only
 
 ---
 
-##Best practice: read-only Volumes
+## Best practice: read-only Volumes
 ### Do!!!
 ```
 -v /data:/data:ro
@@ -85,7 +86,7 @@ Mounts the container’s FS as read-only
 
 ---
 
-##Common mistake: mount host location as writable
+## Common mistake: mount host location as writable
 ### CAUTION!!!
 
 ```
@@ -99,34 +100,20 @@ $ docker run it --rm -v /:/host alpine sh
 $ docker run it --rm -v /subdir/we/need:/dir:ro alpine sh
 ```
 
----
-
-## Agenda
-
-- Introduction
-- Overview of Docker Security
-- Isolation: Kernel Namespaces and Control Groups
-- User Management
-- Secure Image
-- ####Networks
-- Image Distribution
-- Capabilities
-- Seccomp
-- Linux Security Modules
 
 ---
 
-#Networks
+# Networks
 
 ---
 
-##Isolate services
+## Isolate services
 Control which services can talk to which other services
 - Easier to audit
 
 ---
 
-##Links (legacy)
+## Links (legacy)
 Allow 2 specific containers to talk to each other.
 - Brittle: does not survive container restarts
 ```
@@ -136,7 +123,7 @@ docker run -d --link db wordpress
 
 ---
 
-##Network Namespace
+## Network Namespace
 ```
 docker network create my_app
 docker run -it --rm --net=my_app alpine sh
@@ -145,51 +132,38 @@ Links are dynamic, can be created to not yet created containers.
 
 ---
 
-##Best practice: Use Multiple Networks
+## Best practice: Use Multiple Networks
 ![](images/multipleNetwork.png)
 
 ---
 
-##Common Mistake: --net=host
+## Common Mistake: --net=host
 Container can see
 **ALL**
  network traffic, including traffic on docker virtual networks
 
 ---
 
-##Common Mistake: ports exposed on host
+## Common Mistake: ports exposed on host
 * Unnecessary
 * Creates conflicts
 
 ---
 
-##Best practice: Mutual TLS
+## Best practice: Mutual TLS
 Implementation detail
 : use mutual TLS between pairs of services that need to talk to each other.
 
 ---
 
-## Agenda
 
-- Introduction
-- Overview of Docker Security
-- Isolation: Kernel Namespaces and Control Groups
-- User Management
-- Secure Image
-- Networks
-- ####Image Distribution
-- Capabilities
-- Seccomp
-- Linux Security Modules
-
----
 
 #Image Distribution
 
 
 ---
 
-##Security Goals
+## Security Goals
 Image Provenance and Trust
 - Provenance: who made this image?
   - Verify the publisher of the image
@@ -198,7 +172,7 @@ Image Provenance and Trust
 
 ---
 
-##Pulling by tag
+## Pulling by tag
 ```
 $ docker pull alpine:latest
 ```
@@ -224,7 +198,7 @@ No name resolution!
 
 ---
 
-##Content Trust
+## Content Trust
 ```
 $ export DOCKER_CONTENT_TRUST=1
 $ docker pull alpine:latest
@@ -246,7 +220,7 @@ Pull (1 of 1): alpine:latest@sha256:ea0d1389
 
 ---
 
-##Content Trust (on push)
+## Content Trust (on push)
 ```
 $ export DOCKER_CONTENT_TRUST=1
 $ docker tag alpine:latest <user>/alpine:trust
@@ -257,7 +231,7 @@ Looks the same as a regular push by tag!
 
 ---
 
-##Content Trust (it’s more than gpg)
+## Content Trust (it’s more than gpg)
 The push refers to a repository [<user>/alpine]
 ```
 77f08abee8bf: Pushed
@@ -275,7 +249,7 @@ Successfully signed "docker.io/<user>/alpine":trust
 
 ---
 
-##Content Trust (it is more than gpg)
+## Content Trust (it is more than gpg)
 ```
 $ cat ~/.docker/trust/tuf/docker.io/alpine/metadata/timestamp.json | jq
 ```
@@ -283,7 +257,7 @@ $ cat ~/.docker/trust/tuf/docker.io/alpine/metadata/timestamp.json | jq
 
 ---
 
-##Docker Content Trust / Notary Threat Model
+## Docker Content Trust / Notary Threat Model
 - Key compromise?
   - We can recover!
 - Replay attacks?
@@ -295,7 +269,7 @@ $ cat ~/.docker/trust/tuf/docker.io/alpine/metadata/timestamp.json | jq
 
 ---
 
-##Docker Pull
+## Docker Pull
 Only pull trusted images
 Use official images when possible!
 
@@ -303,7 +277,7 @@ Use official images when possible!
 
 ---
 
-##Docker Security Scanning (Nautilus)
+## Docker Security Scanning (Nautilus)
 ![](images/dockerRegistryScan.png)
 
 https://hub.docker.com/r/library/alpine/tags/
@@ -312,7 +286,7 @@ https://hub.docker.com/r/library/alpine/tags/
 
 ---
 
-##Docker Security Scanning (Nautilus)
+## Docker Security Scanning (Nautilus)
 ![](images/dockerSecurityScanning.png)
 
 - Checks against CVE database for declared layers
@@ -322,7 +296,7 @@ statically linked binaries
 
 ---
 
-#Hands-On Exercise
+# Hands-On Exercise
 github.com/riyazdf/dockercon-workshop
 - **trust** directory
 

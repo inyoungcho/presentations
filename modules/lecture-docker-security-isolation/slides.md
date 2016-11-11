@@ -68,6 +68,8 @@ namespace is segment that container sees.
 $ sudo unshare -fp
 $ sudo unshare -fp --mount-proc
 ```
+![](images/unshare.png)
+
 Note:
 Man page for namespaces
 http://man7.org/linux/man-pages/man7/namespaces.7.html
@@ -75,22 +77,32 @@ http://man7.org/linux/man-pages/man7/namespaces.7.html
 ---
 
 ## User Namespaces
-### Start Docker Container with non root user
+- Docker deamon running as a `root`
+
+```
+$ ps aux | grep dockerd                                                                                          
+root      1555  0.3  5.0 377460 38660 ?        Ssl  14:42   0:00 /usr/bin/dockerd -H tcp://0.0.0.0:2345 --storage-
+driver=overlay -H unix:///var/run/docker.sock -H fd://                                                            
+```
+
+- Start Docker Container with non root user with ``--user`` flag
 
 ```
 > sudo docker run --rm --user 1000:1000 alpine  id                                                                           
 uid=1000 gid=1000
 ```
-### Allows to map `UID/GUID`
-- UID 0-> 19999 in contianer C1 mapped to UID 10000-11999 on hosts
-- UID 0->19999 in container C2 is mapped to UID 12000->13999 on host
-- etc..
+
+Note:
+- Allows to map `UID/GUID`
+  - UID 0-> 1999 in contianer C1 mapped to UID 10000-11999 on hosts
+  - UID 0->1999 in container C2 is mapped to UID 12000->13999 on host
+  - etc..
 
 ---
 
 ## cgroup: *Control Groups*
 
-- Container Resource Metering and limiting
+Container Resource Metering and limiting
 
 - CPU
 - Memory
@@ -136,10 +148,22 @@ Running 4 continers on 4 different CPUs
 
 Limit CPU usage, cgroup can assign CPUs to containers.
 
+- `docker run ``
+  - ``--cpu-shares``	CPU shares (relative weight)
+  - ``--cpuset-cpus``	CPUs in which to allow execution (0-3, 0,1)
+  - ``--pids-limit``	Tune container pids limit (set -1 for unlimited)
+
 ![](images/cgroup2.png)
 
 Note: Example using limit CPU usage, cgroup can assign CPUs to containers one.
 Other example would be for memory, and PID
+
+---
+## Docker Run with ``--cpuset-cpu``
+
+`htop` output using ``--cpuset-cpu`` to 2
+
+![](images/htop_2cpuset.png)
 
 ---
 

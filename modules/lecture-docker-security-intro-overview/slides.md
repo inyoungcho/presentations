@@ -29,7 +29,7 @@ We will cover the followings;
 
 ## Agenda
 
-- #### Overview of Docker Security
+- Overview of Docker Security
 - Isolation: Kernel Namespaces and Control Groups
 - User Management
 - Secure Image
@@ -41,8 +41,10 @@ We will cover the followings;
 
 ---
 
-
 # Overview of Docker Security
+
+Note:
+Latest blog: https://www.docker.com/docker-security
 
 ---
 
@@ -80,27 +82,23 @@ Pointers for things that we are covering, seccomp, isolated name spaces, Docker 
 
 ---
 
-
 ## Docker Security High-Level Overview
 
 ![](images/docker_secure.png)
 
 Note: There are 3 areas to focus, give secure platform and manage and package container images to be distributed iand provide secure access control to the running containers.
 
-
 ---
 
 ## Docker is additive to the security of your application ...
 
-The intrinsic security of the linux **kernel** and its support for **namespaces** and **cgroups**
+- The intrinsic security of the linux **kernel** and its support for **namespaces** and **cgroups**
 
-- **Control Groups**, `cgroups` : limit the access processes and containers have to system resources such as CPU, RAM, IOPS and network.
+  - Control Groups, `cgroups` : limit the access processes and containers have to system resources such as CPU, RAM, IOPS and network.
 
-- **Namespaces** : running within a container cannot see, processes running in another container, or in the host system.
+  - `namespaces` : running within a container cannot see, processes running in another container, or in the host system.
 
-- Each container also gets its **own network stack**, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
-
-
+  - Each container also gets its own `network stack`, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
 
 
 Note: Look Man page for each features!
@@ -110,26 +108,25 @@ Control Groups, `cgroups` are a feature of the Linux kernel that allow you to li
 
 `Namespaces` provide the first and most straightforward form of isolation: processes running within a container cannot see, and even less affect, processes running in another container, or in the host system.
 
-Each container also gets its own `network stack`, meaning that a container doesn’t get privileged access to the sockets or interfaces of another container.
+Each container also gets its own `network stack`, meaning that a container does not get privileged access to the sockets or interfaces of another container.
 
 You can add an extra layer of safety by enabling AppArmor, SELinux, GRSEC, or your favorite hardening solution.
 
 More details in this page: https://docs.docker.com/engine/security/security/
 
-
 ---
 
 ## Docker and Security feature of Kernel can enhance the security of your application ...
 
-_Hardening_ **security features of the kernel ** by enabling **seccomp**, **capabilities**, **AppArmor**, **SELinux**
+- _Hardening_ **security features of the kernel ** by enabling **seccomp**, **capabilities**, **AppArmor**, **SELinux**
 
-- **seccomp** (short for secure computing mode): provides an application sandboxing mechanism in the Linux kernel.
+  - `seccomp` (short for secure computing mode): provides an application sandboxing mechanism in the Linux kernel.
 
-- **capabilities** : provide fine-grained control over superuser permissions, allowing use of the root user to be avoided.
+  - `capabilities` : provide fine-grained control over superuser permissions, allowing use of the root user to be avoided.
 
-- **AppArmor** : kernel enhancement to confine programs to a limited set of resources, and bind access control attributes to programs.
+  - `AppArmor` : kernel enhancement to confine programs to a limited set of resources, and bind access control attributes to programs.
 
-- **SELinux** (Security-Enhanced Linux): provides a mechanism for supporting access control security policies.
+  - `SELinux` (Security-Enhanced Linux): provides a mechanism for supporting access control security policies.
 
 Note: Look Man page for each features!
 
@@ -141,17 +138,13 @@ Note: Look Man page for each features!
 Note: Linux Kernel isolation and docker default security setting and add-on Docker customizable profile settings will provide not only secure by default but also provide the additional customizable secure platform.
 
 ---
+
 ## Docker Client-Engine Communication set up TLS by default!
 
 - Docker Client and Docker Engine communicate via UNIX socket or TCP socket.
 - Client authenticates Docker engine
 
-
-
 CA cert  ![](images/oneWayTSL.png)  Server cert and key
-
-
-
 
 Note: https://docs.docker.com/engine/security/https/
 Protect the Docker daemon socket, Secure communication is similar to secure website.
@@ -162,9 +155,8 @@ In the daemon mode, it will only allow connections from clients authenticated by
 
 You can use  OpenSSL, x509 and TLS to setup your own TLS.
 
-
-
 ---
+
 ## Enhance Docker Client-Engine Communication with Mutual TLS
 
 - Client also presents certificate   
@@ -185,16 +177,17 @@ Restart Docker
 
 $ sudo systemctl daemon-reload
 $ sudo systemctl restart docker
+
 ---
 
 ## Docker Security Scanning
 
-Deep visibility with binary level scanning
+- Deep visibility with binary level scanning
 
-- Docker Cloud and Docker Hub can scan images in private repositories to verify that they are free from known security vulnerabilities or exposures
-- Report the results of the scan for each image tag
-- Detailed bill of materials (BOM) of included components and vulnerability profile
-- Checks packages against CVE database AND the code inside to protect against tampering
+  - Docker Cloud and Docker Hub can scan images in private repositories to verify that they are free from known security vulnerabilities or exposures
+  - Report the results of the scan for each image tag
+  - Detailed bill of materials (BOM) of included components and vulnerability profile
+  - Checks packages against CVE database AND the code inside to protect against tampering
 
 Note:
 https://docs.docker.com/docker-cloud/builds/image-scan/
@@ -221,6 +214,7 @@ If a new vulnerability is reported to the CVE database, a notification is sent t
 Plugin framework - today we have one validation service connected but security scanning was designed in a way to easily add different validation services as needed
 
 ---
+
 ## Docker Security Scanning results
 
 ![](images/ScanResults.png)
@@ -229,6 +223,7 @@ Note:
 Docker Cloud can help by automating this vetting process.   If the security scanning service is enabled for a repository, then all the images can be easily audited for vulnerabilities, and the licenses for the components in the images can be viewed.  
 
 ---
+
 ## Docker Security Scanning Notification via Email
 
 ![](images/ScanNotification.png)
@@ -237,6 +232,7 @@ Note:
 Docker Cloud can help by automating this vetting process.   If the security scanning service is enabled for a repository, then all the images can be easily audited for vulnerabilities, and the licenses for the components in the images can be viewed.  
 
 ---
+
 ## Docker Trusted Registry (DTR)
 
 - The enterprise-grade **image storage** solution from Docker
@@ -263,12 +259,16 @@ More details on DTR architecture: https://docs.docker.com/datacenter/dtr/2.0/arc
 We have separate training covering DTR.
 
 ---
-## DTR: Image management
 
+## DTR: Image Management
+
+![](images/DTRimageManagement.png)
 
 ---
-## DTR: Built-in security and access control
 
+## DTR: Built-in Security and Access Control
+
+![](images/DTRaccessControl.png)
 
 ---
 
@@ -289,8 +289,8 @@ All communications between managers and workers is secured via Mutual TLS using 
 
 Certificates are rotated frequently to ensure all identities are still accurate.
 
-
 ---
+
 ## SWARM mode: Mutual TLS by default
 - Leader acts as CA. Any Manager can be promoted to leader.
 - Workers and managers identified by their certificate.
@@ -313,15 +313,16 @@ However, leaders are the only ones that can write to raft and issue certificates
 ---
 
 ## SWARM mode:  Automatic Certificate Rotation
-Customizable certificate rotation periods.
-- Minimum window of 30 minutes.
+- Customizable certificate rotation periods.
+  - Minimum window of 30 minutes.
 
-Occurs automatically.
+- Occurs automatically.
 
-Ensures potentially compromised or leaked certificates are rotated out of use.
+- Ensures potentially compromised or leaked certificates are rotated out of use.
 Whitelist of currently valid certificates.
 
 ---
+
 ## Docker Bench
 - Opensource Auditing Tool http://dockerbench.com
 - A script that checks for dozens of common best-practices around deploying Docker containers in production.
@@ -337,7 +338,8 @@ docker run -it --net host --pid host --cap-add audit_control \
     -v /usr/lib/systemd:/usr/lib/systemd \
     -v /etc:/etc --label docker_bench_security \
     docker/docker-bench-security
-```    
+```  
+
 Note:
 - Use docker-compose
 
@@ -354,9 +356,17 @@ Learn more on this blog:
 https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/
 
 ----
+
 ## Docker Bench Output
 Run your hosts against the Docker Bench
 ![](images/dockerBench.png)
+
+---
+
+## Docker secures your software supply chain
+
+![](images/dockerSecuritySupplyChain.png)
+
 ---
 
 ## Summary: Why Docker is Secure?
@@ -377,11 +387,9 @@ For More information:
 
 https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/
 
-
 ---
 
 ## Best way to Understand Security Features
-
 
 - Knowing which security features or tool to use
 - Understand underlying Docker Security implementation details
@@ -395,6 +403,5 @@ Best Practice example
 - Run container as a non-root
 - Mount read only volume
 - etc
-
 
 ---
