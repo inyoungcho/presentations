@@ -91,6 +91,50 @@ RUN apt-key adv \
     | sudo tee /etc/apt/sources.list.d/spotify.list
 ```
 
+Note:
+Download gpg key from Ununtu to authenticate package for Spotify, store spotify Locations to fetch a package
+
+ Output:
+```
+sudo apt-key adv \
+> --keyserver hkp://keyserver.ubuntu.com:80 \
+> --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886 \
+> && echo deb http://repository.spotify.com stable non-free \
+> | sudo tee /etc/apt/sources.list.d/spotify.list
+Executing: gpg --ignore-time-conflict --no-options --no-default-keyring --homedir /tmp/tmp.3pCONPTxxp --no-auto-check-trustdb --trust-model always --keyring /etc/apt/trusted.gpg --primary-keyring /etc/apt/trusted.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
+gpg: requesting key D2C19886 from hkp server keyserver.ubuntu.com
+gpg: key D2C19886: "Spotify Public Repository Signing Key <operations@spotify.com>" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+deb http://repository.spotify.com stable non-free
+ubuntu@manager:~$ cat /etc/apt/sources.list.d/spotify.list
+deb http://repository.spotify.com stable non-free
+```
+apt-key is used to manage the list of keys used by apt to authenticate
+       packages. Packages which have been authenticated using these keys will
+       be considered trusted.
+
+app-get uses
+/etc/apt/sources.list  
+Locations to fetch packages from.
+
+
+apt-key
+Usage: apt-key [--keyring file] [command] [arguments]
+
+Manage apt's list of trusted keys
+
+  apt-key add <file>          - add the key contained in <file> ('-' for stdin)
+  apt-key del <keyid>         - remove the key <keyid>
+  apt-key export <keyid>      - output the key <keyid>
+  apt-key exportall           - output all trusted keys
+  apt-key update              - update keys using the keyring package
+  apt-key net-update          - update keys using the network
+  apt-key list                - list keys
+  apt-key finger              - list fingerprints
+  apt-key adv                 - pass advanced options to gpg (download key)
+
+
 ---
 
 ##Best practice: read only containers
