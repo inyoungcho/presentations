@@ -92,7 +92,33 @@ RUN apt-key adv \
 ```
 
 Note:
-Download gpg key from Ununtu to authenticate package for Spotify, store spotify Locations to fetch a package
+the apt example is to advocate key pinning when fetching dependencies for dockerfiles (when building images)
+
+most secure way to retrieve images from registries is using DCT
+
+Install spotify ubuntu with installation step (instruciton: https://www.spotify.com/us/download/linux/) in Dockerfile,
+
+1. Add the Spotify repository signing key to be able to verify downloaded packages
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
+
+2. Add the Spotify repository
+echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+
+3. Update list of available packages
+sudo apt-get update
+
+4. Install Spotify
+sudo apt-get install spotify-client
+
+apt-key is used to manage the list of keys used by apt to authenticate
+       packages. Packages which have been authenticated using these keys will
+       be considered trusted.
+
+
+To see where gpg is store, $ apt-key list
+
+/etc/apt/trusted.gpg
+
 
  Output:
 ```
@@ -110,32 +136,21 @@ deb http://repository.spotify.com stable non-free
 ubuntu@manager:~$ cat /etc/apt/sources.list.d/spotify.list
 deb http://repository.spotify.com stable non-free
 ```
-apt-key is used to manage the list of keys used by apt to authenticate
-       packages. Packages which have been authenticated using these keys will
-       be considered trusted.
-
-app-get uses
-/etc/apt/sources.list  
-Locations to fetch packages from.
 
 
-apt-key
-Usage: apt-key [--keyring file] [command] [arguments]
+```
+$ apt-key list
+/etc/apt/trusted.gpg
+--------------------
+pub   4096R/2C52609D 2015-07-14
+uid                  Docker Release Tool (releasedocker) <docker@docker.com>
 
-Manage apt's list of trusted keys
-
-  apt-key add <file>          - add the key contained in <file> ('-' for stdin)
-  apt-key del <keyid>         - remove the key <keyid>
-  apt-key export <keyid>      - output the key <keyid>
-  apt-key exportall           - output all trusted keys
-  apt-key update              - update keys using the keyring package
-  apt-key net-update          - update keys using the network
-  apt-key list                - list keys
-  apt-key finger              - list fingerprints
-  apt-key adv                 - pass advanced options to gpg (download key)
-
+pub   4096R/D2C19886 2015-05-28 [expires: 2017-11-22]
+uid                  Spotify Public Repository Signing Key <operations@spotify.com>
+```
 
 ---
+
 
 ##Best practice: read only containers
 ### Do!!!

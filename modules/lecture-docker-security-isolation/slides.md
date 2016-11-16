@@ -6,16 +6,18 @@
 ## Linux Kernel namespaces
 
 - Provide processes with  their own view of the system
-  -  namespaces = limits what you can see and use
-  - Cgroup = limits how much you can user
+  - `namespaces` = limits what you can see and use
+  - `cgroup` = limits how much you can user
+
+---
 
 |Namespace|constant |Isolates|
 |-------|:---------------:|:-----|
-|Cgroup |CLONE_NEWCGROUP  |Cgroup root directory|
+|cgroup |CLONE_NEWCGROUP  |Cgroup root directory|
 |IPC    |SCLONE_NEWIPC    |System V IPC, POSIX message queues|
 |Network|		CLONE_NEWNET	|	Network devices, stacks, ports, etc.|
 |Mount	|	CLONE_NEWNS	    |	Mount points|
-|PID	  |		CLONE_NEWPID  |		Process IDs|
+|PID	  |		CLONE_NEWPID  |	Process IDs|
 |User	  |		CLONE_NEWUSER	|	User and group IDs|
 |UTS		|	CLONE_NEWUTS	  |	Hostname and NIS domain name|
 
@@ -135,7 +137,8 @@ http://man7.org/linux/man-pages/man7/cgroups.7.html
 
 ---
 
-## cgroups example with CPUs: *what containers can use*
+## cgroups example with CPUs:
+
 
 Running 4 continers on 4 different CPUs
 
@@ -144,7 +147,7 @@ Running 4 continers on 4 different CPUs
 
 ---
 
-## cgroups: *what containers can use*
+## cgroups: CPU USAGES
 
 - Limit CPU usage, cgroup can assign CPUs to containers.
 
@@ -182,8 +185,9 @@ docker pids limits the number that container can create.
 
 ----
 
-## Do not Start Docker Container with Full container capabilities ``–privileged``
+## Full container capabilities ``–privileged``
 
+Do not Start Docker Container this way!!!
 
 - lifts all the limitations enforced by the device `cgroup` controller.  
 - the container can then do almost everything that the host can do.
