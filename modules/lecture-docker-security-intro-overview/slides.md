@@ -101,7 +101,6 @@ Control Groups, `cgroups` are a feature of the Linux kernel that allow you to li
 
 Each container also gets its own `network stack`, meaning that a container does not get privileged access to the sockets or interfaces of another container.
 
-You can add an extra layer of safety by enabling AppArmor, SELinux, GRSEC, or your favorite hardening solution.
 
 More details in this page: https://docs.docker.com/engine/security/security/
 
@@ -121,6 +120,8 @@ More details in this page: https://docs.docker.com/engine/security/security/
 
 Note:
 
+You can add an extra layer of safety by enabling AppArmor, SELinux, GRSEC, or your favorite hardening solution.
+
 Docker containers are very similar to LXC containers(LXC is a userspace interface for the Linux kernel containment features.), and they have similar security features; kernel namespaces, appamor and SELinux profiles, seccomp, chroots (using pivot_root), capabilities, and Cgroup.
 
 Look Man page for each features!
@@ -130,7 +131,7 @@ Look Man page for each features!
 ## Docker is Secure by default
 ![](images/secure_platform.png)
 
-Note: Linux Kernel isolation capabilities plus docker default security setting and add-on Docker customizable profile settings will provide  secure by default  docker platform. Docker platform provide the additional customizable secure platform.
+Note: Docker enables Linux Kernel isolation capabilities wihh default security setting, and ddd-on Docker customizable profile settings will enhance  secure  default  docker platform further. Docker platform provide the additional customizable secure platform.
 
 ---
 
@@ -166,11 +167,13 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart docker
 ```
 
+Note: One way to expose docker on the internet is when docker service starts.
+Restart the docker engine with the flag ``-H tcp://0.0.0.0:2376``
 ---
 
 ## Docker Client-Engine Communication set up One Way TLS
 
-- Docker Client and Docker Engine communicate via UNIX socket or TCP socket.
+- Docker Client and Docker Engine can communicate via UNIX socket or TCP socket.
 - Same way we trust websites:
   - Server Cert and Key on Engine
   - CA Cert on Client
@@ -196,9 +199,10 @@ More deails are here: https://docs.docker.com/engine/security/https/
 
 ---
 
-## Run Docker Deamon and Client with cert and Key
+## Run Docker Deamon and Docker Client with cert and Key, with `tlsverify`
 
 - Make the Docker daemon only accept connections from clients providing a certificate trusted by our CA
+
 
 ```
 $ dockerd --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem \
@@ -227,6 +231,8 @@ $ cp -v {ca,cert,key}.pem ~/.docker
 $ export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1
 ```
 
+Note: The step by step details are here.
+http://stackoverflow.com/questions/38286564/docker-tls-verify-docker-host-and-docker-cert-path-on-ubuntu
 
 ---
 

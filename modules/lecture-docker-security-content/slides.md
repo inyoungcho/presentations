@@ -8,6 +8,104 @@
 
 ---
 
+
+## Identity in Docker
+
+ ![](images/identity.png)
+
+ Note: Identity is the means by which all other controls can be enforced.  Without being able to identify application versions, developers, administrators, machines onto which applications we can’t effectively enforce any kind of access control.
+
+ ---
+
+## User Identities in docker hub accounts with access control
+```
+$ docker login docker.io
+Username (user): user
+Password:
+Login Succeeded
+```
+
+Note: User identities include accounts with access control for pushing pulling images from a registry, and in the case of UCP, for deploying containers to a docker engine or swarm.  (Users can now log in using OS-specific keychains - passwords no longer have to be stored in a config file).
+
+---
+
+## Role Based User Identities in DTR
+
+```
+$ notary -d ~/.docker/trust key list
+    ROLE           GUN                       KEY ID                   LOCATION
+----------------------------------------------------------------------------------
+  root                            5f8ec4acd0a9ca301ef84ac...587       file (...)
+  targets      user/myrepo        71662d563fc1dfd0a83c5b3...9ce       file (...)
+  user                            d73b1075076e39a0c3ed638...05e       file (...)
+```
+
+Note: Users also own keys that are allowed to sign for images using content trust.
+
+---
+
+## Host Identities in SWARM
+
+```
+$ swarmctl node ls
+
+ID                         Name    Membership  Status  Availability  Manager Status
+--                         ----    ----------  ------  ------------  --------------
+3w8pfmhn6janhhzg7pu7ktxd2  node-3  ACCEPTED    READY   ACTIVE        
+9dva02k3khzbrgyok9dqwvv2m  node-2  ACCEPTED    READY   ACTIVE        
+9j1kxp7cd1zs7a2njgyz6q22c  node-1  ACCEPTED    READY   ACTIVE        REACHABLE *
+```
+
+Note: The Docker Host has an ID for the the lifecycle of the host, as well as a role: worker, or manager, which can change throughout the lifecycle of the host.
+
+---
+
+## SWARM HOST ID
+
+```
+$ openssl x509 -in node-3/certificates/swarm-node.crt -text
+Certificate:
+    ...
+    Issuer: CN=swarm-ca
+    Validity
+      Not Before: Jun 17 20:30:00 2016 GMT
+      Not After : Sep 15 20:30:00 2016 GMT
+    Subject: O=58slx2ra5qiee92n4uf..., OU=swarm-worker, CN=3w8pfmhn6janhhzg7pu7ktxd2
+    ...
+    X509v3 extensions:
+      ...
+      X509v3 Subject Alternative Name:
+        DNS:swarm-worker
+...
+-----BEGIN CERTIFICATE-----
+```
+
+Note:
+The ID is controlled by the CA for a swarm cluster, which can but does not have to be an external CA.   A certificate is issued for the node, with which it communicates with the rest of the swarm   Note that the certificate specifies the node ID as the common name, the role the node has (worker or manager) is specified as the organization unit, and the cluster ID is specified as the organization.  Meaning that swarm knows what cluster a particular node belongs to.
+
+---
+
+## Image Identities with DIGEST
+```
+$ docker images --digests
+REPOSITORY     TAG       DIGEST                          IMAGE ID       CREATED...          
+debian         latest    sha256:e7d38b3517548a1c...0aa   f50f9524513f   8 weeks...
+busybox        latest    sha256:4a731fb46adc5cef...a92   47bcc53f74dc   11 days...
+user/myrepo    latest    sha256:ea0d1389812f43e4...950   f9858dea7747   6 hours...
+
+
+$ notary -d ~/.docker/trust list docker.io/user/myrepo
+   NAME                       DIGEST                       SIZE (BYTES)    ROLE    
+---------------------------------------------------------------------------------
+  latest   ea0d1389812f43e474c50155ec4914e1b48792...950    1360           targets  
+```
+
+Note: Each image is identified with a particular sha256 hash.  That hash can also be associated with a tag, and that association can be certified using Content Trust, which expires after a time and needs to be re-certified.
+
+
+---
+
+
 ## What is a layered filesystem?
 
 WHAT IS IN AN IMAGE: = THE LAYERED FILESYSTEM
@@ -70,6 +168,17 @@ Because each container has its own thin writable container layer, and all change
 
 ---
 
+## Best Practice: Start with official Image in Dockerfile
+
+![](images/baseimage.png)
+
+Note: In a dockerfile, the first known good component you can start off with is an official image as the base image.  These are commonly used combination of components that are well documented, try to promote best practices, and are actively curated and maintained.  They are regularly scanned for vulnerabilities, and official images are provided over HTTPS from Docker Hub, providing authenticity and integrity guarantees of the image.  They are also signed using Docker Content Trust, which has been covered at previous DockerCons and will be covered in the next portion of this talk.  But briefly, Content Trust will additionally provide freshness guarantees so that you know that official images are not outdated.
+
+Notice that the image version is specified; this is important because you don’t want your application to suddenly start misbehaving only because the underlying components changed drastically without you knowing.  You probably don’t want to pin to a specific image digest, however - while pinning to a specific version does not necessarily mean the underlying components will not change (because they will probably be patched for vulnerabilities), the components you depend on should maintain API compatibility.
+
+
+---
+
 ## Best practice: *minimal* base images
 ### Do !!!
 
@@ -81,7 +190,26 @@ ubuntu
 
 ---
 
-## Best practice: verify content
+## Check Dependency by Checksum
+
+![](images/checksum.png)
+
+
+Note: If you download need to download a dependency, try to make sure it’s downloaded over TLS so you can get authenticity and integrity guarantees.  If you can’t pin to a particular version, you can pin to a particular checksum.  Ideally you would be able to download the dependency by checksum from a content-addressable store, but if not you can always validate the checksum after it’s been downloaded.
+
+
+---
+
+## Download with Package Manager Security Key
+
+![](images/runkey.png)
+
+
+Note: If your package manager provides a way to guarantee authenticity and integrity, use it;  debian apt repositories GPG-sign packages for instance, and apt validates the signature when you download and install the package.  So make sure you download the relevant GPG key.
+
+---
+
+## Best practice: verify content before Download
 ### Do!!!
 ```
 RUN apt-key adv \
