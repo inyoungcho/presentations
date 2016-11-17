@@ -2,7 +2,7 @@
 
 ---
 
-##  To  be Root vs Not to be Root
+##  To  be Root or Not to be Root
 
 - `Capabilities` breakdown `root` permissions into groups that can be individually allowed or blocked
 	- Often do not want or need all root permissions
@@ -13,6 +13,7 @@ Note: http://man7.org/linux/man-pages/man7/capabilities.7.html
 ---
 
 ## Docker Default Capabilities
+
 In whitelist:
 ```		
 "CAP_CHOWN",
@@ -31,7 +32,6 @@ In whitelist:
 "CAP_AUDIT_WRITE",
 ```
 
-Note:
 Note: http://man7.org/linux/man-pages/man7/capabilities.7.html
 
 CAP_CHOWN
@@ -73,35 +73,35 @@ CAP_AUDIT_CONTROL (since Linux 2.6.11)
 ---
 
 ## How do we add/remove capabilities?
+
 ```
 docker run --cap-add
 docker run --cap-drop
 docker run --cap-drop ALL --cap-add $CAP
 ```
 
-Where `$CAP` starts with `CAP_`
+Where ``$CAP`` starts with ``CAP_``
 
 ---
 
 ## Configure capabilities in compose
-cap_add:
 
-  - CAP_NET_BROADCAST
-  - CAP_NET_RAW
+cap_add:
+- CAP_NET_BROADCAST
+- CAP_NET_RAW
 
 
 cap_drop:
-
-  - ALL
+- ALL
 
 ---
 
 ## What to watch out for
 - Read the fine print for each capability!
-	- man capabilities
+- man capabilities
 	``$ man capabilities``
 
-	- i.e. removing CAP_KILL
+- i.e. removing CAP_KILL
  only requires permissions checks and enabling bypasses permissions checks. It doesn’t generically enable/disable the ability to kill
 - CAP_SYS_ADMIN is nearly root...
 
@@ -112,7 +112,7 @@ cap_drop:
 - No extended attributes in images -> no capabilities elevation normally possible
 
 - Use docker to reduce capabilities
-- Docker can’t grant capabilities to non-root users due to some limitations in older kernel versions
+- Docker can not grant capabilities to non-root users due to some limitations in older kernel versions
 
 ---
 
@@ -137,15 +137,15 @@ docker run --user
 
 - Remember that Docker does not use the "CAP" prefix when addressing capability constants.
 
-	- Start a new container and prove that the container's root account can change the ownership of files.
+- Start a new container and prove that the container's root account can change the ownership of files.
 
 ``sudo docker run --rm -it alpine chown nobody /``
 
-	- Start another new container and drop all capabilities for the containers root account other than the ``CAP_CHOWN`` capability.
+- Start another new container and drop all capabilities for the containers root account other than the ``CAP_CHOWN`` capability.
 
 ``sudo docker run --rm -it --cap-drop ALL --cap-add CHOWN alpine chown nobody /``
 
-	- Listing all capabilities, start a new container using Alpine Linux, install the `libcap` package and then list capabilities.
+- Listing all capabilities, start a new container using Alpine Linux, install the `libcap` package and then list capabilities.
 
 ``sudo docker run --rm -it alpine sh -c 'apk add -U libcap; capsh --print'``
 
@@ -153,7 +153,9 @@ docker run --user
 
 ## What to watch out for
 
-``$ docker run --privileged …``
+```
+$ docker run --privileged
+```
 
 - gives *all capabilities* to the container, also lifts limitations from  *device* cgroup
 
@@ -161,8 +163,8 @@ docker run --user
 ---
 
 ## Hands-On Exercise
-github.com/riyazdf/dockercon-workshop
-- **capabilities** directory
+www.katacoda.com/docker-training/courses/security-course
+- **capabilities** scenario
 
 
 
@@ -373,8 +375,10 @@ $ sudo ls
 ---
 
 ## Hands-On Exercise
-github.com/riyazdf/dockercon-workshop
- - **seccomp**  directory
+www.katacoda.com/docker-training/courses/security-course
+- **seccomp** scenario
+
+
 ```
 $ docker run --rm -it --security-opt seccomp=default-no-chmod.json alpine chmod 777 /
 ```
@@ -486,8 +490,10 @@ $ aa-genprof <PATH_TO_BINARY>
 ---
 
 ## Hands-On Exercise
-github.com/riyazdf/dockercon-workshop
- - **apparmor** directory
+www.katacoda.com/docker-training/courses/security-course
+- **apparmor** scenario
+
+
 
 ---
 

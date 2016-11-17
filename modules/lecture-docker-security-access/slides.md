@@ -3,6 +3,7 @@
 ---
 
 ## Default runs as root
+
 ```
 $ docker run -v /bin:/host/bin -it --rm alpine sh
 $ whoami
@@ -69,9 +70,8 @@ $ docker daemon --userns-remap [uid[:gid]]
 ---
 
 ## Hands-On Exercise && break
-```
-github.com/riyazdf/dockercon-workshop
-```
- - **userns** directory
+www.katacoda.com/docker-training/courses/security-course
+- **userns** scenario
+
 
 ---

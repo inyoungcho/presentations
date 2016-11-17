@@ -168,7 +168,9 @@ $ sudo systemctl restart docker
 ```
 
 Note: One way to expose docker on the internet is when docker service starts.
-Restart the docker engine with the flag ``-H tcp://0.0.0.0:2376``
+
+
+
 ---
 
 ## Docker Client-Engine Communication set up One Way TLS

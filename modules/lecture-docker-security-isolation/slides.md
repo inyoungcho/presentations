@@ -199,22 +199,8 @@ http://obrown.io/2016/02/15/privileged-containers.html
 ---
 
 ## Hands-On Exercise:
-Set up your AWS instance - check your email!
+www.katacoda.com/docker-training/courses/security-course
+- **cgroups** scenario
 
-```
-chmod 400 <PATH_TO_FILE>/<name>.pem
-ssh -i <PATH_TO_FILE>/<name>.pem ubuntu@<Public DNS>
-```
-Example:
-```
-ssh -i riyaz.pem ubuntu@ec2-54-149...compute.amazonaws.com
-```
-```
-git clone https://github.com/riyazdf/dockercon-workshop.git
-```
-- **cgroups** directory
-
-NOTE: Ubuntu 15.10 does not support PID limits, but 16.04 does if you have it
-So DO NOT run the fork bomb unless you have another machine.
 
 ---
