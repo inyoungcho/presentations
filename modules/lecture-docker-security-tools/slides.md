@@ -400,14 +400,16 @@ chmod: /: Operation not permitted
 ---
 
 ## What is a LSM?
-- A plugin to the linux kernel that allows us to set policies to restrict what a process can do.
-- **Mandatory Access Control**: instead of using user-defined permissions to specify access, the underlying system describes permissions itself with labels
+- A plugin to the linux kernel:
+ 	- Allows user to set policies to restrict what a process can do.
+- **Mandatory Access Control**:
+	- Instead of using user-defined permissions to specify access, the underlying system describes permissions itself with labels
 
 ---
 
 ## What is a LSM?
 - Under the hood:
-	- each LSM implements a kernel interface that hooks into user-level syscalls about to access an important kernel object (inodes, task control blocks, etc.), either allowing them to pass through or denying them outright depending on the application profile
+	- Each LSM implements a kernel interface that hooks into user-level syscalls about to access an important kernel object (inodes, task control blocks, etc.), either allowing them to pass through or denying them outright depending on the application profile
 ![](images/LSM.png)
 
 ---
@@ -422,21 +424,23 @@ chmod: /: Operation not permitted
 
 ---
 
-## Deep Dive - AppArmor: File Access Management
+## Deep Dive - AppArmor:
+### File Access Management
 - AppArmor uses globbing and deny syntax to express filepath restrictions
 
-	- Deny read/write/lock/link/execute on files in /sys/  
+	- Deny read/write/lock/link/execute on files in ``/sys/``
 ```
   deny /sys/* rwklx
  ```
-	- Deny on files in /sys/ and subdirectories
+	- Deny on files in ``/sys/`` and subdirectories
 ```
 deny /sys/** rwklx
 ```
 
 ---
 
-## Deep Dive - AppArmor: Networking Management
+## Deep Dive - AppArmor:
+### Networking Management
 |     Like firewall rules    |        |
 |------|:---:|
 |Can completely disable networking |           deny network|
@@ -445,14 +449,16 @@ deny /sys/** rwklx
 
 ---
 
-## Deep Dive - AppArmor: Capability Management
-AppArmor can also deny capabilities with a simple syntax:
-- deny capability chown,
-- deny capability dac_override
+## Deep Dive - AppArmor:
+### Capability Management
+- AppArmor can also deny capabilities with a simple syntax:
+	- Deny capability `chown`
+	- Deny capability `dac_override`
 
 ---
 
-## Deep Dive - AppArmor: Composability
+## Deep Dive - AppArmor:
+### Composability
 |C-style include statements   |        |
 |------|:---:|
 |include <abstractions/base>| built-in bundle of files |
@@ -461,20 +467,23 @@ AppArmor can also deny capabilities with a simple syntax:
 
 ---
 
-## Deep Dive - AppArmor: Tools for debugging and generating profiles (on Ubuntu):
+## Deep Dive - AppArmor:
+### Tools for debugging and generating profiles (on Ubuntu)
 
+- Install ``apparmor-utils``
 ```
 $ sudo apt install apparmor-utils
 ```
+- Watch AppArmor block things!
 ```
 $ aa-complain <PATH_TO_PROFILE>
 ```
-- Watch AppArmor block things!
 
+- Interactive profile generation!
 ```
 $ aa-genprof <PATH_TO_BINARY>
 ```
-- Interactive profile generation!
+
 
 ---
 
@@ -487,6 +496,8 @@ $ aa-genprof <PATH_TO_BINARY>
 ---
 
 ## Common mistake: disabling profiles
+### CAUTION !!
+
 - SELinux: `setenforce 0` (on daemon)
 	- http://stopdisablingselinux.com/
 
@@ -521,6 +532,10 @@ www.katacoda.com/docker-training/courses/security-course
 	- Limit resources with cgroups
 	- Use the default apparmor/seccomp/capabilities, or your own tested profiles (not --privileged!)
 
+---
+
+## Advanced Topics
+### Extra for Experts
 ---
 
 ## Running your own Notary
