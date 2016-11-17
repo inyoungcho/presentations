@@ -35,16 +35,14 @@ In whitelist:
 Note: http://man7.org/linux/man-pages/man7/capabilities.7.html
 
 CAP_CHOWN
-              Make arbitrary changes to file UIDs and GIDs (see chown(2)).
+Make arbitrary changes to file UIDs and GIDs (see chown(2)).
 
 CAP_DAC_OVERRIDE
-              Bypass file read, write, and execute permission checks.  (DAC
-              is an abbreviation of "discretionary access control".)
+Bypass file read, write, and execute permission checks.  (DAC
+is an abbreviation of "discretionary access control".)
 
 CAP_FSETID
-	Don't clear set-user-ID and set-group-ID mode bits when a file
-  is	does not match the filesystem or any of the supplementary GIDs
-	of the calling process.
+Don't clear set-user-ID and set-group-ID mode bits when a file is	does not match the filesystem or any of the supplementary GIDs of the calling process.
 
 ---
 
@@ -133,29 +131,39 @@ docker run --user
 
 ---
 
-## Docker Capabilities examples
+## Docker Capabilities Examples
 
-- Remember that Docker does not use the "CAP" prefix when addressing capability constants.
 
 - Start a new container and prove that the container's root account can change the ownership of files.
 
-``sudo docker run --rm -it alpine chown nobody /``
+```
+sudo docker run --rm -it alpine chown nobody /
+```
 
 - Start another new container and drop all capabilities for the containers root account other than the ``CAP_CHOWN`` capability.
 
-``sudo docker run --rm -it --cap-drop ALL --cap-add CHOWN alpine chown nobody /``
+```
+sudo docker run --rm -it --cap-drop ALL --cap-add CHOWN alpine chown nobody /
+```
 
 - Listing all capabilities, start a new container using Alpine Linux, install the `libcap` package and then list capabilities.
 
-``sudo docker run --rm -it alpine sh -c 'apk add -U libcap; capsh --print'``
+```
+sudo docker run --rm -it alpine sh -c 'apk add -U libcap; capsh --print'
+```
+
+Note:  Remember that Docker does not use the "CAP" prefix when addressing capability constants.
+
 
 ---
 
 ## What to watch out for
-
+### CAUTION!!
 ```
 $ docker run --privileged
+
 ```
+
 
 - gives *all capabilities* to the container, also lifts limitations from  *device* cgroup
 
